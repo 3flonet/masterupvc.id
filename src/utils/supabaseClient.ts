@@ -1,8 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+// Supabase is not used in this project - MySQL is the primary database.
+// This file exists to maintain backward compatibility with db.ts imports.
+// All supabase references in db.ts will always receive null and be skipped.
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-export const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey) 
-  : null;
+export const supabase = null;

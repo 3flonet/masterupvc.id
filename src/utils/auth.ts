@@ -1,4 +1,5 @@
-import { supabase } from "./supabaseClient";
+// Auth utility - uses localStorage for session management
+// Admin authentication is handled by /api/auth/login (MySQL-based)
 
 const SESSION_KEY = "masterupvc_admin_session";
 
@@ -8,22 +9,9 @@ export function isLoggedIn(): boolean {
 }
 
 export async function verifyAdminEmail(email: string): Promise<boolean> {
-  if (!supabase) {
-    return email.toLowerCase() === "admin@masterupvc.id";
-  }
-  try {
-    const { data, error } = await supabase
-      .from("admin_users")
-      .select("email")
-      .eq("email", email.toLowerCase());
-
-    if (error || !data || data.length === 0) {
-      return email.toLowerCase() === "admin@masterupvc.id"; // Fallback to default mock admin
-    }
-    return true;
-  } catch {
-    return email.toLowerCase() === "admin@masterupvc.id"; // Fallback to default mock admin
-  }
+  // Verification is handled by the API endpoint /api/auth/login
+  // This is a client-side fallback check
+  return email.toLowerCase().includes("@");
 }
 
 export function loginAdmin(email: string): void {

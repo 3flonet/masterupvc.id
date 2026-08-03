@@ -10,14 +10,22 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Disable parallel workers - CloudLinux limits child process spawning (EAGAIN)
+  experimental: {
+    webpackBuildWorker: false,
+    parallelServerCompiles: false,
+    parallelServerBuildTraces: false,
+  },
   // Explicitly set project root to avoid wrong workspace root detection
   outputFileTracingRoot: path.join(__dirname),
-  // Explicit webpack alias to ensure @/ resolves correctly on CloudLinux
+  // Explicit webpack alias + disable parallelism to avoid EAGAIN on CloudLinux
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.join(__dirname, "src"),
     };
+    // Disable parallel compilation
+    config.parallelism = 1;
     return config;
   },
   async redirects() {

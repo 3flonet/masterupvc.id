@@ -2,17 +2,13 @@ import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Skip TypeScript & ESLint errors during build on shared hosting
+  // Skip TypeScript errors during build on shared hosting
   // (symlinked node_modules causes false type resolution errors)
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // Disable parallel workers - CloudLinux limits child process spawning (EAGAIN)
+  // Disable parallel server compilation - CloudLinux limits child process spawning (EAGAIN)
   experimental: {
-    webpackBuildWorker: false,
     parallelServerCompiles: false,
     parallelServerBuildTraces: false,
   },

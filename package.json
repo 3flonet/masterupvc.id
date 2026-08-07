@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "RAYON_NUM_THREADS=1 node $(npm root)/next/dist/bin/next build --webpack",
     "start": "node $(npm root)/next/dist/bin/next start",
     "lint": "eslint"

@@ -1,0 +1,1 @@
+globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/article-categories/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"D:\\apps-project\\masterupvc.id\\src\\app\\api\\article-categories\\route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};

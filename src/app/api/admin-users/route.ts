@@ -2,7 +2,20 @@ import { NextResponse } from "next/server";
 import { executeQuery } from "@/utils/dbMysql";
 
 // GET ALL ADMIN USERS
+
+let isTableMigrated = false;
+async function ensureTableMigrated() {
+  if (isTableMigrated) return;
+  try {
+    await executeQuery("ALTER TABLE admin_users ADD COLUMN name VARCHAR(255) NULL AFTER id");
+  } catch (e) {
+    // column already exists
+  }
+  isTableMigrated = true;
+}
+
 export async function GET() {
+  await ensureTableMigrated();
   try {
     const rows = await executeQuery(
       "SELECT id, name, email, created_at FROM admin_users ORDER BY id ASC"
@@ -16,6 +29,7 @@ export async function GET() {
 
 // CREATE NEW ADMIN USER
 export async function POST(request: Request) {
+  await ensureTableMigrated();
   try {
     const { name, email, password } = await request.json();
 
@@ -45,6 +59,7 @@ export async function POST(request: Request) {
 
 // UPDATE ADMIN USER
 export async function PUT(request: Request) {
+  await ensureTableMigrated();
   try {
     const { id, name, email, password } = await request.json();
 

@@ -807,16 +807,16 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(editingAdvantage ? "Keunggulan diperbarui!" : "Keunggulan ditambahkan!");
+        showToast(editingAdvantage ? "Keunggulan diperbarui!" : "Keunggulan ditambahkan!", "success");
         setIsAdvantageModalOpen(false);
         setEditingAdvantage(null);
         setAdvTitle(""); setAdvDesc(""); setAdvIcon("Volume2"); setAdvOrder(1);
         loadAdvantages();
       } else {
-        toast.error(data.error || "Gagal menyimpan keunggulan");
+        showToast(data.error || "Gagal menyimpan keunggulan", "error");
       }
     } catch (err: any) {
-      toast.error(err.message);
+      showToast(err.message, "error");
     }
   };
 
@@ -825,11 +825,11 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`/api/advantages?id=${id}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("Keunggulan berhasil dihapus");
+        showToast("Keunggulan berhasil dihapus", "success");
         loadAdvantages();
       }
     } catch (err: any) {
-      toast.error(err.message);
+      showToast(err.message, "error");
     }
   };
 
@@ -854,16 +854,16 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(editingComp ? "Perbandingan diperbarui!" : "Perbandingan ditambahkan!");
+        showToast(editingComp ? "Perbandingan diperbarui!" : "Perbandingan ditambahkan!", "success");
         setIsCompModalOpen(false);
         setEditingComp(null);
         setCompFeature(""); setCompUpvcVal(""); setCompWoodVal(""); setCompAlumVal("");
         loadComparisons();
       } else {
-        toast.error(data.error || "Gagal menyimpan perbandingan");
+        showToast(data.error || "Gagal menyimpan perbandingan", "error");
       }
     } catch (err: any) {
-      toast.error(err.message);
+      showToast(err.message, "error");
     }
   };
 
@@ -872,11 +872,11 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`/api/comparisons?id=${id}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("Fitur perbandingan berhasil dihapus");
+        showToast("Fitur perbandingan berhasil dihapus", "success");
         loadComparisons();
       }
     } catch (err: any) {
-      toast.error(err.message);
+      showToast(err.message, "error");
     }
   };
 

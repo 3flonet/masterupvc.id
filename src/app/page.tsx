@@ -429,45 +429,94 @@ export default function Home() {
               <Sparkles className="w-3.5 h-3.5" /> Katalog Digital
             </span>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-brand-charcoal dark:text-white leading-tight">
-              Pilihan Kusen, Jendela & Pintu UPVC Premium
+              {settings?.catalog_title || "Pilihan Kusen, Jendela & Pintu UPVC Premium"}
             </h2>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-xl mx-auto leading-relaxed">
-              Jelajahi berbagai tipe produk UPVC terbaik kami mulai dari tipe sliding, folding, swing, hingga kaca mati dengan varian warna serat kayu jati, hitam, putih, dan abu-abu.
+              {settings?.catalog_description || "Jelajahi berbagai tipe produk UPVC terbaik kami mulai dari tipe sliding, folding, swing, hingga kaca mati dengan varian warna serat kayu jati, hitam, putih, dan abu-abu."}
             </p>
           </div>
 
           {/* Featured Products Dynamic Grid */}
           {featuredProducts.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
-              {featuredProducts.slice(0, 8).map((product: any, idx: number) => (
-                <Link
-                  key={product.id || idx}
-                  href="/katalog"
-                  className="group bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden hover:border-brand-orange/40 hover:shadow-lg hover:shadow-brand-orange/5 transition-all duration-300"
-                >
-                  {product.image_url ? (
-                    <div className="aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+              {featuredProducts.slice(0, 8).map((product: any, idx: number) => {
+                const minPrice = product.variants && product.variants.length > 0
+                  ? Math.min(...product.variants.map((v: any) => v.price || 0))
+                  : 0;
+                return (
+                  <Link
+                    key={product.id || idx}
+                    href="/katalog"
+                    className="group bg-white dark:bg-zinc-900/90 border border-zinc-200/70 dark:border-zinc-800/80 rounded-2xl overflow-hidden hover:border-brand-orange/50 hover:shadow-xl hover:shadow-brand-orange/10 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
+                  >
+                    <div>
+                      {product.image_url ? (
+                        <div className="aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          {product.tier && (
+                            <span className="absolute top-2.5 right-2.5 text-[10px] font-black uppercase tracking-wider bg-brand-charcoal/80 text-white backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+                              {product.tier}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="aspect-[4/3] bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-zinc-900/5 dark:from-orange-500/10 dark:to-zinc-800/80 flex flex-col items-center justify-center p-4 relative group-hover:from-orange-500/15 transition-all">
+                          {product.tier && (
+                            <span className="absolute top-2.5 right-2.5 text-[10px] font-black uppercase tracking-wider bg-brand-orange/10 text-brand-orange border border-brand-orange/20 px-2.5 py-0.5 rounded-full">
+                              {product.tier}
+                            </span>
+                          )}
+                          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 shadow-md flex items-center justify-center text-brand-orange mb-2 group-hover:scale-110 transition-transform">
+                            {product.category_name?.toLowerCase().includes("pintu") ? (
+                              <DoorClosed className="w-7 h-7" />
+                            ) : (
+                              <Grid className="w-7 h-7" />
+                            )}
+                          </div>
+                          <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 text-center">Master UPVC Premium</span>
+                        </div>
+                      )}
+                      <div className="p-4 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-extrabold text-brand-orange uppercase tracking-wider bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded-md border border-orange-200/50 dark:border-orange-900/40">
+                            {product.category_name || "Produk UPVC"}
+                          </span>
+                          {product.dimensions && (
+                            <span className="text-[10px] text-zinc-400 font-mono">
+                              {product.dimensions}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-sm font-bold text-brand-charcoal dark:text-white leading-snug group-hover:text-brand-orange transition-colors line-clamp-2">
+                          {product.name}
+                        </h3>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="aspect-[4/3] bg-gradient-to-br from-brand-orange/10 to-orange-50 dark:from-brand-orange/5 dark:to-zinc-800 flex items-center justify-center">
-                      <span className="text-4xl">🪟</span>
+
+                    <div className="p-4 pt-0 mt-2 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between text-xs pt-3">
+                      <div>
+                        {minPrice > 0 ? (
+                          <>
+                            <span className="text-[10px] text-zinc-400 block">Mulai dari</span>
+                            <span className="font-extrabold text-brand-charcoal dark:text-white text-sm">
+                              Rp {minPrice.toLocaleString("id-ID")}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-medium text-zinc-400 italic">Harga via Kustom</span>
+                        )}
+                      </div>
+                      <span className="text-brand-orange font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        Detail <ArrowRight className="w-3.5 h-3.5" />
+                      </span>
                     </div>
-                  )}
-                  <div className="p-4">
-                    <p className="text-xs font-black text-brand-orange uppercase tracking-wider mb-1 truncate">
-                      {product.category_name || product.type || "Produk UPVC"}
-                    </p>
-                    <h3 className="text-sm font-bold text-brand-charcoal dark:text-white leading-tight line-clamp-2">
-                      {product.name}
-                    </h3>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
 

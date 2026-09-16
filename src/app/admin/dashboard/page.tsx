@@ -322,6 +322,8 @@ export default function AdminDashboard() {
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [seoKeywords, setSeoKeywords] = useState("");
+  const [catalogTitle, setCatalogTitle] = useState("");
+  const [catalogDescription, setCatalogDescription] = useState("");
   const [favicon, setFavicon] = useState<string | null>(null);
   const [logo, setLogo] = useState<string | null>(null);
   const [contactAddress, setContactAddress] = useState("");
@@ -490,6 +492,8 @@ export default function AdminDashboard() {
       setSeoTitle(settingsData.seo_title);
       setSeoDescription(settingsData.seo_description);
       setSeoKeywords(settingsData.seo_keywords);
+      setCatalogTitle(settingsData.catalog_title || "Pilihan Kusen, Jendela & Pintu UPVC Premium");
+      setCatalogDescription(settingsData.catalog_description || "Jelajahi berbagai tipe produk UPVC terbaik kami mulai dari tipe sliding, folding, swing, hingga kaca mati dengan varian warna serat kayu jati, hitam, putih, dan abu-abu.");
       setFavicon(settingsData.favicon || null);
       setLogo(settingsData.logo || null);
       setContactAddress(settingsData.contact_address || "");
@@ -1000,6 +1004,8 @@ const handleSaveSettings = async (e: React.FormEvent) => {
       seo_title: seoTitle,
       seo_description: seoDescription,
       seo_keywords: seoKeywords,
+      catalog_title: catalogTitle,
+      catalog_description: catalogDescription,
       favicon,
       logo,
       contact_address: contactAddress,

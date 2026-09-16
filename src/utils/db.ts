@@ -23,6 +23,8 @@ export interface WebsiteSettings {
   seo_title: string;
   seo_description: string;
   seo_keywords: string;
+  catalog_title?: string;
+  catalog_description?: string;
   favicon: string | null;
   logo: string | null;
   contact_address: string;

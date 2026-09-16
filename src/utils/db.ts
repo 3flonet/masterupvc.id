@@ -60,6 +60,12 @@ export interface WebsiteSettings {
   color_image_golden_oak?: string | null;
   color_image_orange?: string | null;
   google_maps_review_url?: string | null;
+  smtp_host?: string | null;
+  smtp_port?: number | null;
+  smtp_user?: string | null;
+  smtp_pass?: string | null;
+  smtp_sender_name?: string | null;
+  smtp_secure?: number;
 }
 
 // PRODUCTS LOCAL STORAGE
@@ -139,6 +145,12 @@ export function getLocalSettings(): WebsiteSettings {
     contact_email: "info@masterupvc.id",
     contact_description: "Kunjungi pabrik produksi kami atau diskusikan kebutuhan ukuran, varian warna, dan penawaran khusus langsung dengan tim teknis kami.",
     contact_maps_url: "Curug, Gn. Sindur, Bogor",
+      smtp_host: "",
+      smtp_port: 587,
+      smtp_user: "",
+      smtp_pass: "",
+      smtp_sender_name: "Master UPVC Support",
+      smtp_secure: 0,
     social_instagram: "",
     social_facebook: "",
     social_tiktok: "",

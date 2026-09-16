@@ -1,1 +1,0 @@
-globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/contact-submissions/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"D:\\apps-project\\masterupvc.id\\src\\app\\api\\contact-submissions\\route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};

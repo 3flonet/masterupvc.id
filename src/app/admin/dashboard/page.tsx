@@ -70,11 +70,14 @@ import {
   Grid,
   Utensils,
   ShowerHead,
-  Bath
+  Bath,
+  Users,
+  Mail
 } from "lucide-react";
 
 import ArticlesPanel from "@/components/ArticlesPanel";
 import LeadsPanel from "@/components/LeadsPanel";
+import UserManagerPanel from "@/components/UserManagerPanel";
 
 const getServiceIcon = (iconName: string) => {
   switch (iconName) {
@@ -91,7 +94,7 @@ const getServiceIcon = (iconName: string) => {
 export default function AdminDashboard() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
-  const [activeTab, setActiveTab] = useState<"products" | "articles" | "settings" | "leads" | "social-wall" | "testimonials" | "services" | "project">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "articles" | "settings" | "leads" | "social-wall" | "testimonials" | "services" | "project" | "users">("products");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Services states
@@ -171,6 +174,15 @@ export default function AdminDashboard() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactDescription, setContactDescription] = useState("");
   const [contactMapsUrl, setContactMapsUrl] = useState("");
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState(587);
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPass, setSmtpPass] = useState("");
+  const [smtpSenderName, setSmtpSenderName] = useState("Master UPVC Support");
+  const [smtpSecure, setSmtpSecure] = useState(0);
+  const [testEmailAddress, setTestEmailAddress] = useState("");
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<{ success: boolean; message: string } | null>(null);
   const [socialInstagram, setSocialInstagram] = useState("");
   const [socialFacebook, setSocialFacebook] = useState("");
   const [socialTiktok, setSocialTiktok] = useState("");
@@ -330,6 +342,12 @@ export default function AdminDashboard() {
       setContactEmail(settingsData.contact_email || "");
       setContactDescription(settingsData.contact_description || "");
       setContactMapsUrl(settingsData.contact_maps_url || "");
+      setSmtpHost(settingsData.smtp_host || "");
+      setSmtpPort(settingsData.smtp_port ? Number(settingsData.smtp_port) : 587);
+      setSmtpUser(settingsData.smtp_user || "");
+      setSmtpPass(settingsData.smtp_pass || "");
+      setSmtpSenderName(settingsData.smtp_sender_name || "Master UPVC Support");
+      setSmtpSecure(settingsData.smtp_secure ? 1 : 0);
       setGoogleMapsReviewUrl(settingsData.google_maps_review_url || "");
       setSocialInstagram(settingsData.social_instagram || "");
       setSocialFacebook(settingsData.social_facebook || "");
@@ -686,6 +704,46 @@ export default function AdminDashboard() {
   };
 
   // SEO & AI Settings Submit
+  
+  // Handler Kirim Email Tes
+  const handleSendTestEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testEmailAddress || !testEmailAddress.includes("@")) {
+      showToast("Masukkan alamat email tujuan tes yang valid.", "error");
+      return;
+    }
+    setSendingTestEmail(true);
+    setTestEmailResult(null);
+    try {
+      const res = await fetch("/api/settings/test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          test_email: testEmailAddress,
+          smtp_host: smtpHost,
+          smtp_port: smtpPort,
+          smtp_user: smtpUser,
+          smtp_pass: smtpPass,
+          smtp_sender_name: smtpSenderName,
+          smtp_secure: smtpSecure
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTestEmailResult({ success: true, message: data.message });
+        showToast(data.message, "success");
+      } else {
+        setTestEmailResult({ success: false, message: data.error || "Gagal mengirim email tes." });
+        showToast(data.error || "Gagal mengirim email tes.", "error");
+      }
+    } catch (err: any) {
+      setTestEmailResult({ success: false, message: "Terjadi kesalahan koneksi server." });
+      showToast("Terjadi kesalahan koneksi server.", "error");
+    } finally {
+      setSendingTestEmail(false);
+    }
+  };
+
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingSettings(true);
@@ -701,6 +759,12 @@ export default function AdminDashboard() {
       contact_email: contactEmail,
       contact_description: contactDescription,
       contact_maps_url: contactMapsUrl,
+        smtp_host: smtpHost,
+        smtp_port: smtpPort,
+        smtp_user: smtpUser,
+        smtp_pass: smtpPass,
+        smtp_sender_name: smtpSenderName,
+        smtp_secure: smtpSecure,
       social_instagram: socialInstagram,
       social_facebook: socialFacebook,
       social_tiktok: socialTiktok,
@@ -1083,6 +1147,20 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => {
+                setActiveTab("users");
+                setMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "users"
+                  ? "bg-brand-orange text-white shadow-md shadow-brand-orange/15"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              Kelola Admin & User
+            </button>
+            <button
+              onClick={() => {
                 setActiveTab("articles");
                 setMobileSidebarOpen(false);
               }}
@@ -1153,6 +1231,7 @@ export default function AdminDashboard() {
               {activeTab === "services" && "Kelola Layanan"}
               {activeTab === "project" && "Kelola Project"}
               {activeTab === "settings" && "Pengaturan Aplikasi"}
+              {activeTab === "users" && "Kelola User & Admin"}
               {activeTab === "articles" && "Artikel / Blog"}
               {activeTab === "leads" && "Leads Chatbot"}
               {activeTab === "social-wall" && "Social Wall"}
@@ -2443,23 +2522,196 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Save Button */}
-              <div className="flex justify-end">
+              
+                
+              
+              
+              {/* Mail Transfer Agent (SMTP) & Test Email Section */}
+              <div className="bg-white dark:bg-brand-charcoal border border-zinc-200/60 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-8">
+                <div className="border-b border-zinc-100 dark:border-zinc-800 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 border border-brand-orange/20 text-brand-orange text-xs font-bold mb-2">
+                      <Mail className="w-3.5 h-3.5" /> Mail Transfer Agent (SMTP)
+                    </div>
+                    <h3 className="text-xl font-black text-brand-charcoal dark:text-white tracking-tight">
+                      Pengaturan Server Email SMTP
+                    </h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                      Server pengiriman otomatis link Lupa Password, email notifikasi lead, dan konfirmasi pesan.
+                    </p>
+                  </div>
+
+                  {/* Server Connection Status Badge */}
+                  <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-2xl shrink-0">
+                    <span className={`w-2.5 h-2.5 rounded-full ${smtpHost && smtpUser ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+                    <span className="text-xs font-extrabold text-zinc-700 dark:text-zinc-300">
+                      {`Status: ${smtpHost && smtpUser ? "Terkonfigurasi" : "Belum Diisi"}`}
+                    </span>
+                  </div>
+                </div>
+
+                {/* SMTP Credentials Form */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                      SMTP Host <span className="text-brand-orange">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. smtp.gmail.com atau mail.domainanda.com"
+                      value={smtpHost}
+                      onChange={(e) => setSmtpHost(e.target.value)}
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-sm focus:outline-none focus:border-brand-orange font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                      SMTP Port <span className="text-brand-orange">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="587 atau 465"
+                      value={smtpPort}
+                      onChange={(e) => setSmtpPort(Number(e.target.value))}
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-sm focus:outline-none focus:border-brand-orange font-medium"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                      SMTP Username / Email <span className="text-brand-orange">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="admin@domainanda.com"
+                      value={smtpUser}
+                      onChange={(e) => setSmtpUser(e.target.value)}
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-sm focus:outline-none focus:border-brand-orange font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                      SMTP Password / App Password
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="••••••••••••"
+                      value={smtpPass}
+                      onChange={(e) => setSmtpPass(e.target.value)}
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-sm focus:outline-none focus:border-brand-orange font-medium"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                      Nama Pengirim (Sender Name)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Master UPVC Official"
+                      value={smtpSenderName}
+                      onChange={(e) => setSmtpSenderName(e.target.value)}
+                      className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-sm focus:outline-none focus:border-brand-orange font-medium"
+                    />
+                  </div>
+
+                  <div className="flex items-center pt-2">
+                    <div className="w-full bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-3.5 flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="smtpSecure"
+                        checked={smtpSecure === 1}
+                        onChange={(e) => setSmtpSecure(e.target.checked ? 1 : 0)}
+                        className="w-4 h-4 rounded text-brand-orange focus:ring-brand-orange accent-brand-orange cursor-pointer"
+                      />
+                      <label htmlFor="smtpSecure" className="text-xs font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer select-none">
+                        Gunakan SSL Port 465 (TLS: Port 587)
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sub-Card: TEST EMAIL FEATURE */}
+                <div className="bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-transparent border border-brand-orange/20 rounded-2xl p-5 sm:p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center font-bold text-sm">
+                        🧪
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-extrabold text-brand-charcoal dark:text-white">
+                          Uji Pengiriman Email (Test Email)
+                        </h4>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                          Kirim email percobaan instan untuk memverifikasi sambungan server SMTP Anda.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="relative flex-1">
+                      <input
+                        type="email"
+                        placeholder="Masukkan alamat email penerima (e.g. nama@gmail.com)"
+                        value={testEmailAddress}
+                        onChange={(e) => setTestEmailAddress(e.target.value)}
+                        className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:border-brand-orange font-medium"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSendTestEmail}
+                      disabled={sendingTestEmail}
+                      className="bg-zinc-900 dark:bg-white hover:bg-black dark:hover:bg-zinc-100 text-white dark:text-black font-bold px-6 py-2.5 rounded-xl text-xs transition-all shadow-md cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2 shrink-0"
+                    >
+                      {sendingTestEmail ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          Mengirim Email Tes...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="w-3.5 h-3.5" /> Kirim Email Tes
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Inline Test Email Feedback Message */}
+                  {testEmailResult && (
+                    <div className={`p-4 rounded-xl text-xs font-bold flex items-start gap-2.5 ${
+                      testEmailResult.success 
+                        ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400" 
+                        : "bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-400"
+                    }`}>
+                      <span className="text-base leading-none">{`${testEmailResult.success ? "✅" : "❌"}`}</span>
+                      <div className="flex-1 font-semibold">{testEmailResult.message}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom Responsive Save Configuration Button */}
+              <div className="w-full flex items-center justify-center sm:justify-end pt-6 pb-8 border-t border-zinc-200/60 dark:border-zinc-800">
                 <button
                   type="submit"
                   disabled={savingSettings}
-                  className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange/95 text-white font-bold px-8 py-4 rounded-2xl text-sm transition-all shadow-lg shadow-brand-orange/15 disabled:opacity-60 cursor-pointer"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-gradient-to-r from-brand-orange via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-xs sm:text-sm transition-all shadow-lg shadow-brand-orange/25 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-60 cursor-pointer text-center"
                 >
                   {savingSettings ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
-                      Simpan Konfigurasi
+                      <Save className="w-4.5 h-4.5 flex-shrink-0" />
+                      <span className="whitespace-normal sm:whitespace-nowrap">Simpan Seluruh Konfigurasi Aplikasi</span>
                     </>
                   )}
                 </button>
               </div>
+
 
             </form>
           </div>
@@ -2471,6 +2723,10 @@ export default function AdminDashboard() {
 
         {activeTab === "leads" && (
           <LeadsPanel />
+        )}
+
+        {activeTab === "users" && (
+          <UserManagerPanel />
         )}
 
         {activeTab === "testimonials" && (

@@ -1,1 +1,0 @@
-globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/social-wall/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"D:\\apps-project\\masterupvc.id\\src\\app\\api\\social-wall\\route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};

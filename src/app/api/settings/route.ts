@@ -45,6 +45,12 @@ async function ensureSettingsColumnsExist() {
       if (!columnNames.includes("color_image_golden_oak")) missingColumns.push("color_image_golden_oak LONGTEXT NULL");
       if (!columnNames.includes("color_image_orange")) missingColumns.push("color_image_orange LONGTEXT NULL");
       if (!columnNames.includes("google_maps_review_url")) missingColumns.push("google_maps_review_url TEXT NULL");
+      if (!columnNames.includes("smtp_host")) missingColumns.push("smtp_host VARCHAR(255) NULL");
+      if (!columnNames.includes("smtp_port")) missingColumns.push("smtp_port INT NULL");
+      if (!columnNames.includes("smtp_user")) missingColumns.push("smtp_user VARCHAR(255) NULL");
+      if (!columnNames.includes("smtp_pass")) missingColumns.push("smtp_pass VARCHAR(255) NULL");
+      if (!columnNames.includes("smtp_sender_name")) missingColumns.push("smtp_sender_name VARCHAR(255) NULL");
+      if (!columnNames.includes("smtp_secure")) missingColumns.push("smtp_secure TINYINT(1) DEFAULT 0");
 
       if (missingColumns.length > 0) {
         console.log("Migrating database settings table, adding missing columns:", missingColumns);
@@ -87,12 +93,12 @@ export async function GET() {
         chatbot_active: item.chatbot_active !== undefined ? item.chatbot_active : 0,
         chatbot_name: item.chatbot_name || "Nadia",
         chatbot_avatar: item.chatbot_avatar || null,
-        chatbot_initial_greeting: item.chatbot_initial_greeting || "Halo! Saya Nadia, asisten virtual Master UPVC. Ada yang bisa saya bantu hari ini? 😊",
+        chatbot_initial_greeting: item.chatbot_initial_greeting || "Halo! Saya Nadia, asisten virtual Master UPVC. Ada yang bisa saya bantu hari ini?",
         chatbot_ask_name_message: item.chatbot_ask_name_message || "Boleh tahu siapa nama Anda?",
         chatbot_ask_phone_message: item.chatbot_ask_phone_message || "Boleh minta nomor WhatsApp Anda yang aktif? (Contoh: 08123456789)",
         chatbot_ask_email_message: item.chatbot_ask_email_message || "Bisa infokan juga alamat email Anda?",
         chatbot_ask_reason_message: item.chatbot_ask_reason_message || "Terima kasih! Silakan ceritakan apa yang ingin Anda konsultasikan atau tanyakan mengenai pintu & jendela UPVC?",
-        chatbot_final_message: item.chatbot_final_message || "Terima kasih! Informasi Anda sudah kami simpan. Silakan klik tombol di bawah untuk langsung terhubung dengan tim teknis kami di WhatsApp. Tim kami akan segera membantu Anda! 😊",
+        chatbot_final_message: item.chatbot_final_message || "Terima kasih! Informasi Anda sudah kami simpan. Silakan klik tombol di bawah untuk langsung terhubung dengan tim teknis kami di WhatsApp. Tim kami akan segera membantu Anda!",
         company_profile_pdf: item.company_profile_pdf || null,
         profile_image_hero: item.profile_image_hero || null,
         profile_image_about: item.profile_image_about || null,
@@ -104,7 +110,13 @@ export async function GET() {
         color_image_coklat: item.color_image_coklat || null,
         color_image_golden_oak: item.color_image_golden_oak || null,
         color_image_orange: item.color_image_orange || null,
-        google_maps_review_url: item.google_maps_review_url || null
+        google_maps_review_url: item.google_maps_review_url || null,
+        smtp_host: item.smtp_host || "",
+        smtp_port: item.smtp_port ? Number(item.smtp_port) : 587,
+        smtp_user: item.smtp_user || "",
+        smtp_pass: item.smtp_pass || "",
+        smtp_sender_name: item.smtp_sender_name || "Master UPVC Support",
+        smtp_secure: item.smtp_secure !== undefined && item.smtp_secure !== null ? Number(item.smtp_secure) : 0
       });
     }
 
@@ -129,7 +141,13 @@ export async function GET() {
       ai_knowledge: [
         { question: "Apa keunggulan bahan UPVC?", answer: "Bahan UPVC kami kedap suara, anti air, dan tahan api." }
       ],
-      schema_json: { "@context": "https://schema.org", "@type": "LocalBusiness", "name": "Master UPVC" }
+      schema_json: { "@context": "https://schema.org", "@type": "LocalBusiness", "name": "Master UPVC" },
+      smtp_host: "",
+      smtp_port: 587,
+      smtp_user: "",
+      smtp_pass: "",
+      smtp_sender_name: "Master UPVC Support",
+      smtp_secure: 0
     };
     return NextResponse.json(defaultSettings);
   } catch (err: any) {
@@ -182,7 +200,13 @@ export async function POST(request: Request) {
       color_image_coklat,
       color_image_golden_oak,
       color_image_orange,
-      google_maps_review_url
+      google_maps_review_url,
+      smtp_host,
+      smtp_port,
+      smtp_user,
+      smtp_pass,
+      smtp_sender_name,
+      smtp_secure
     } = await request.json();
     
     if (!seo_title) {
@@ -235,7 +259,13 @@ export async function POST(request: Request) {
           color_image_coklat = ?,
           color_image_golden_oak = ?,
           color_image_orange = ?,
-          google_maps_review_url = ?
+          google_maps_review_url = ?,
+          smtp_host = ?,
+          smtp_port = ?,
+          smtp_user = ?,
+          smtp_pass = ?,
+          smtp_sender_name = ?,
+          smtp_secure = ?
          WHERE id = 1`,
         [
           seo_title, 
@@ -277,7 +307,13 @@ export async function POST(request: Request) {
           color_image_coklat || null,
           color_image_golden_oak || null,
           color_image_orange || null,
-          google_maps_review_url || null
+          google_maps_review_url || null,
+          smtp_host || null,
+          smtp_port ? Number(smtp_port) : 587,
+          smtp_user || null,
+          smtp_pass || null,
+          smtp_sender_name || null,
+          smtp_secure !== undefined && smtp_secure !== null ? Number(smtp_secure) : 0
         ]
       );
     } else {
@@ -293,8 +329,9 @@ export async function POST(request: Request) {
           chatbot_ask_reason_message, chatbot_final_message, company_profile_pdf,
           profile_image_hero, profile_image_about, profile_image_mission,
           social_wall_active, social_wall_embed_code,
-          color_image_putih, color_image_hitam, color_image_coklat, color_image_golden_oak, color_image_orange, google_maps_review_url
-         ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
+          color_image_putih, color_image_hitam, color_image_coklat, color_image_golden_oak, color_image_orange, google_maps_review_url,
+          smtp_host, smtp_port, smtp_user, smtp_pass, smtp_sender_name, smtp_secure
+         ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
         [
           seo_title, 
           seo_description || null, 
@@ -335,7 +372,13 @@ export async function POST(request: Request) {
           color_image_coklat || null,
           color_image_golden_oak || null,
           color_image_orange || null,
-          google_maps_review_url || null
+          google_maps_review_url || null,
+          smtp_host || null,
+          smtp_port ? Number(smtp_port) : 587,
+          smtp_user || null,
+          smtp_pass || null,
+          smtp_sender_name || null,
+          smtp_secure !== undefined && smtp_secure !== null ? Number(smtp_secure) : 0
         ]
       );
     }

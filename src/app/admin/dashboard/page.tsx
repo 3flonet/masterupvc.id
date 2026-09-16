@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { isLoggedIn, logoutAdmin } from "@/utils/auth";
+import {
+  useRouter } from "next/navigation";
+import { isLoggedIn,
+  logoutAdmin } from "@/utils/auth";
 import { 
-  getProducts, 
-  addProduct, 
-  updateProduct, 
-  deleteProduct, 
-  getCategories, 
-  addCategory, 
-  updateCategory, 
+  getProducts,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  getCategories,
+  addCategory,
+  updateCategory,
   deleteCategory,
   getSettings,
   updateSettings,
@@ -39,42 +41,67 @@ import {
   updateProject,
   deleteProject
 } from "@/utils/db";
-import { Product, ProductVariant, Category, Service, Project } from "@/utils/seedData";
-import { 
-  LogOut, 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
-  X, 
-  ShieldCheck, CheckCircle, Award, Volume2, Zap, Droplet, SunDim, Wind, 
-  Trash,
-  Upload,
-  FolderOpen,
-  Settings,
-  Package,
-  Layers,
-  Save,
-  HelpCircle,
-  Menu,
-  FileText,
+import { Product,
+  ProductVariant,
+  Category,
+  Service,
+  Project } from "@/utils/seedData";
+
+
+import {
+  Award,
+  Bath,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  CheckCircle,
+  ChevronDown,
+  DoorClosed,
+  Droplet,
+  Edit,
   Eye,
   EyeOff,
-  Tv,
-  Link as LinkIcon,
-  ImageIcon,
-  MessageSquare,
-  Star,
-  Sparkles,
-  DoorClosed,
+  Factory,
+  FileText,
+  FolderOpen,
+  Globe,
   Grid,
-  Utensils,
+  Headphones,
+  HelpCircle,
+  ImageIcon,
+  Layers,
+  LayoutDashboard,
+  Link as LinkIcon,
+  Lock,
+  LogOut,
+  Mail,
+  Menu,
+  MessageSquare,
+  Package,
+  Palette,
+  Plus,
+  Ruler,
+  Save,
+  Search,
+  Settings,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
   ShowerHead,
-  Bath,
+  Sparkles,
+  Star,
+  SunDim,
+  Trash,
+  Trash2,
+  Tv,
+  Upload,
   Users,
-  Mail
+  Utensils,
+  Volume2,
+  Wind,
+  X,
+  Zap
 } from "lucide-react";
-
 import ArticlesPanel from "@/components/ArticlesPanel";
 import LeadsPanel from "@/components/LeadsPanel";
 import UserManagerPanel from "@/components/UserManagerPanel";
@@ -94,8 +121,75 @@ const getServiceIcon = (iconName: string) => {
 export default function AdminDashboard() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
-  const [activeTab, setActiveTab] = useState<"products" | "articles" | "settings" | "leads" | "social-wall" | "testimonials" | "services" | "project" | "users" | "advantages" | "comparisons">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "articles" | "settings" | "leads" | "social-wall" | "testimonials" | "services" | "project" | "users" | "advantages" | "comparisons" | "why-us">("products");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Why Us States
+  const [whyUsList, setWhyUsList] = useState<any[]>([]);
+  const [isWhyUsModalOpen, setIsWhyUsModalOpen] = useState(false);
+  const [editingWhyUs, setEditingWhyUs] = useState<any>(null);
+  const [whyTitle, setWhyTitle] = useState("");
+  const [whyDesc, setWhyDesc] = useState("");
+  const [whyIcon, setWhyIcon] = useState("ShieldCheck");
+  const [whyOrder, setWhyOrder] = useState(1);
+  const [advSearch, setAdvSearch] = useState("");
+
+  const loadWhyUs = () => {
+    fetch("/api/why-us")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setWhyUsList(data); })
+      .catch(err => console.error(err));
+  };
+
+  useEffect(() => {
+    loadWhyUs();
+  }, []);
+
+  const handleSaveWhyUs = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = editingWhyUs ? "PUT" : "POST";
+      const payload = {
+        id: editingWhyUs?.id,
+        title: whyTitle,
+        description: whyDesc,
+        icon: whyIcon,
+        sort_order: Number(whyOrder),
+        active: 1
+      };
+      const res = await fetch("/api/why-us", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(editingWhyUs ? "Poin Mengapa Kami diperbarui!" : "Poin Mengapa Kami ditambahkan!", "success");
+        setIsWhyUsModalOpen(false);
+        setEditingWhyUs(null);
+        setWhyTitle(""); setWhyDesc(""); setWhyIcon("ShieldCheck"); setWhyOrder(1);
+        loadWhyUs();
+      } else {
+        showToast(data.error || "Gagal menyimpan", "error");
+      }
+    } catch (err: any) {
+      showToast(err.message, "error");
+    }
+  };
+
+  const handleDeleteWhyUs = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus poin ini?")) return;
+    try {
+      const res = await fetch(`/api/why-us?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        showToast("Poin Mengapa Kami berhasil dihapus", "success");
+        loadWhyUs();
+      }
+    } catch (err: any) {
+      showToast(err.message, "error");
+    }
+  };
+
 
   // Advantages States
   const [advantagesList, setAdvantagesList] = useState<any[]>([]);
@@ -1263,6 +1357,20 @@ const handleSaveSettings = async (e: React.FormEvent) => {
             </button>
             <button
               onClick={() => {
+                setActiveTab("why-us");
+                setMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "why-us"
+                  ? "bg-brand-orange text-white shadow-md shadow-brand-orange/15"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+              }`}
+            >
+              <HelpCircle className="w-4 h-4" />
+              Kelola Mengapa Kami
+            </button>
+            <button
+              onClick={() => {
                 setActiveTab("comparisons");
                 setMobileSidebarOpen(false);
               }}
@@ -1887,88 +1995,338 @@ const handleSaveSettings = async (e: React.FormEvent) => {
         )}
 
         
-        {/* TAB 10: KELOLA KEUNGGULAN (ADVANTAGES) */}
+        {/* TAB 10: KELOLA KEUNGGULAN (ADVANTAGES) - REDESIGNED */}
         {activeTab === "advantages" && (
           <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-              <div>
-                <h3 className="text-lg font-extrabold text-brand-charcoal dark:text-white">
-                  Daftar Pilar Keunggulan Material
-                </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                  Atur poin keunggulan UPVC yang ditampilkan pada Landing Page.
-                </p>
+            {/* Header Hero Card */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-brand-charcoal to-zinc-950 p-8 border border-zinc-800 text-white shadow-xl">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-brand-orange/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/20 text-brand-orange border border-brand-orange/30 text-[11px] font-bold uppercase tracking-widest mb-3">
+                    <Sparkles className="w-3.5 h-3.5" /> 8 Pilar Keunggulan Material
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                    Manajemen Pilar Keunggulan UPVC
+                  </h2>
+                  <p className="text-zinc-400 text-xs mt-1 max-w-xl leading-relaxed">
+                    Kelola poin keunggulan produk yang tampil di landing page. Anda dapat menambah, memperbarui teks, mengganti ikon, serta mengatur urutan prioritas tampil secara realtime.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingAdvantage(null);
+                    setAdvTitle(""); setAdvDesc(""); setAdvIcon("Volume2"); setAdvOrder(advantagesList.length + 1);
+                    setIsAdvantageModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-orange to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white font-extrabold px-6 py-3.5 rounded-2xl text-xs transition-all shadow-xl shadow-orange-500/25 transform hover:-translate-y-0.5 cursor-pointer shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Pilar Baru</span>
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setEditingAdvantage(null);
-                  setAdvTitle(""); setAdvDesc(""); setAdvIcon("Volume2"); setAdvOrder(advantagesList.length + 1);
-                  setIsAdvantageModalOpen(true);
-                }}
-                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-2xl text-xs transition-all shadow-lg shadow-orange-500/20"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Tambah Keunggulan</span>
-              </button>
+
+              {/* Stats & Search Bar */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-zinc-800/80">
+                <div className="bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800 flex items-center gap-3">
+                  <div className="p-3 bg-brand-orange/10 text-brand-orange rounded-xl font-bold">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Total Pilar Aktif</div>
+                    <div className="text-lg font-black text-white">{advantagesList.length} Item</div>
+                  </div>
+                </div>
+
+                <div className="bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800 flex items-center gap-3">
+                  <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl font-bold">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Status Sinkronisasi</div>
+                    <div className="text-sm font-black text-emerald-400">Database Live</div>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    type="text"
+                    value={advSearch}
+                    onChange={(e) => setAdvSearch(e.target.value)}
+                    placeholder="Cari keunggulan..."
+                    className="w-full h-full pl-10 pr-4 py-3 bg-zinc-900/80 border border-zinc-800 rounded-2xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-brand-orange"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {advantagesList.map((item) => (
-                <div key={item.id} className="bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-2xl text-brand-orange font-bold">
-                      {item.icon}
+            {/* Redesigned Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {advantagesList
+                .filter(adv => !advSearch || adv.title.toLowerCase().includes(advSearch.toLowerCase()) || adv.description?.toLowerCase().includes(advSearch.toLowerCase()))
+                .map((adv) => (
+                  <div 
+                    key={adv.id}
+                    className="group relative bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-sm hover:shadow-xl hover:border-brand-orange/40 transition-all duration-300 flex flex-col justify-between overflow-hidden hover:-translate-y-1"
+                  >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-brand-orange/5 rounded-bl-full translate-x-4 -translate-y-4 group-hover:scale-150 transition-transform duration-300 pointer-events-none" />
+                    
+                    <div>
+                      {/* Icon & Action Buttons */}
+                      <div className="flex justify-between items-center mb-5">
+                        <div className="p-3.5 bg-orange-50 dark:bg-orange-950/40 text-brand-orange rounded-2xl group-hover:scale-110 transition-transform duration-300 border border-orange-100 dark:border-orange-900/30">
+                          {adv.icon === "Volume2" && <Volume2 className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "Zap" && <Zap className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "Droplet" && <Droplet className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "SunDim" && <SunDim className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "Wind" && <Wind className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "Sparkles" && <Sparkles className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "ShieldAlert" && <ShieldAlert className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "ShieldCheck" && <ShieldCheck className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "Star" && <Star className="w-6 h-6 text-brand-orange" />}
+                          {adv.icon === "Award" && <Award className="w-6 h-6 text-brand-orange" />}
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/80 p-1 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
+                          <button
+                            onClick={() => {
+                              setEditingAdvantage(adv);
+                              setAdvTitle(adv.title);
+                              setAdvDesc(adv.description);
+                              setAdvIcon(adv.icon);
+                              setAdvOrder(adv.sort_order);
+                              setIsAdvantageModalOpen(true);
+                            }}
+                            title="Edit Keunggulan"
+                            className="p-1.5 text-zinc-500 hover:text-brand-orange hover:bg-white dark:hover:bg-zinc-800 rounded-lg transition-all cursor-pointer"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAdvantage(adv.id)}
+                            title="Hapus Keunggulan"
+                            className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-white dark:hover:bg-zinc-800 rounded-lg transition-all cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <h3 className="font-extrabold text-brand-charcoal dark:text-white text-lg mb-2 group-hover:text-brand-orange transition-colors">
+                        {adv.title}
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-3">
+                        {adv.description}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingAdvantage(item);
-                          setAdvTitle(item.title);
-                          setAdvDesc(item.description);
-                          setAdvIcon(item.icon);
-                          setAdvOrder(item.sort_order);
-                          setIsAdvantageModalOpen(true);
-                        }}
-                        className="p-2 text-zinc-500 hover:text-brand-orange hover:bg-orange-50 dark:hover:bg-zinc-800 rounded-xl transition-all"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteAdvantage(item.id)}
-                        className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-zinc-800 rounded-xl transition-all"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                    {/* Footer Badges */}
+                    <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-[10px]">
+                      <span className="font-bold text-zinc-400 bg-zinc-100 dark:bg-zinc-900 px-2.5 py-1 rounded-md">
+                        Urutan #{adv.sort_order}
+                      </span>
+                      <span className="font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-md border border-emerald-200/40">
+                        Aktif
+                      </span>
                     </div>
                   </div>
-                  <h4 className="font-bold text-brand-charcoal dark:text-white text-base mb-2">{item.title}</h4>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{item.description}</p>
-                  <div className="text-[10px] text-zinc-400 font-mono">Urutan: #{item.sort_order}</div>
-                </div>
-              ))}
+                ))}
             </div>
 
-            {/* ADVANTAGES MODAL */}
+            {/* Redesigned Edit/Add Modal */}
             {isAdvantageModalOpen && (
-              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-brand-charcoal p-6 md:p-8 rounded-3xl max-w-lg w-full border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-extrabold text-brand-charcoal dark:text-white">
-                      {editingAdvantage ? "Edit Keunggulan" : "Tambah Keunggulan Baru"}
-                    </h3>
-                    <button onClick={() => setIsAdvantageModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+              <div className="fixed inset-0 bg-zinc-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-brand-charcoal rounded-3xl max-w-lg w-full border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 p-6 text-white flex justify-between items-center border-b border-zinc-800">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-brand-orange">Kelola Keunggulan</span>
+                      <h3 className="text-lg font-black text-white">
+                        {editingAdvantage ? "Edit Pilar Keunggulan" : "Tambah Pilar Baru"}
+                      </h3>
+                    </div>
+                    <button onClick={() => setIsAdvantageModalOpen(false)} className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition-all cursor-pointer">
                       <X className="w-5 h-5" />
                     </button>
                   </div>
-                  <form onSubmit={handleSaveAdvantage} className="space-y-4 text-xs">
+
+                  <form onSubmit={handleSaveAdvantage} className="p-6 space-y-5 text-xs">
                     <div>
-                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Judul Keunggulan</label>
+                      <label className="block font-bold text-brand-charcoal dark:text-zinc-200 mb-1.5">
+                        Judul Keunggulan <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         required
                         value={advTitle}
                         onChange={(e) => setAdvTitle(e.target.value)}
                         placeholder="Contoh: Kedap Suara"
+                        className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-brand-charcoal dark:text-zinc-200 mb-1.5">
+                        Deskripsi Singkat (Narasi)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={advDesc}
+                        onChange={(e) => setAdvDesc(e.target.value)}
+                        placeholder="Tulis narasi penjelasan keunggulan..."
+                        className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold text-brand-charcoal dark:text-zinc-200 mb-1.5">
+                          Ikon Keunggulan
+                        </label>
+                        <select
+                          value={advIcon}
+                          onChange={(e) => setAdvIcon(e.target.value)}
+                          className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange font-medium"
+                        >
+                          <option value="Volume2">Volume2 (Kedap Suara)</option>
+                          <option value="Zap">Zap (Hemat Energi)</option>
+                          <option value="Droplet">Droplet (Tahan Air & Hujan)</option>
+                          <option value="SunDim">SunDim (Tahan Cuaca Ekstrem)</option>
+                          <option value="Wind">Wind (Tahan Polusi)</option>
+                          <option value="Sparkles">Sparkles (Perawatan Mudah)</option>
+                          <option value="ShieldAlert">ShieldAlert (Anti Rayap)</option>
+                          <option value="ShieldCheck">ShieldCheck (Anti Debu)</option>
+                          <option value="Star">Star (Bintang)</option>
+                          <option value="Award">Award (Piala/Prestasi)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-brand-charcoal dark:text-zinc-200 mb-1.5">
+                          Urutan Tampil
+                        </label>
+                        <input
+                          type="number"
+                          value={advOrder}
+                          onChange={(e) => setAdvOrder(Number(e.target.value))}
+                          className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                      <button 
+                        type="button" 
+                        onClick={() => setIsAdvantageModalOpen(false)} 
+                        className="px-6 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                      <button 
+                        type="submit" 
+                        className="px-7 py-3 rounded-2xl bg-gradient-to-r from-brand-orange to-orange-600 text-white font-extrabold hover:from-orange-500 hover:to-orange-700 shadow-xl shadow-orange-500/25 transition-all cursor-pointer"
+                      >
+                        Simpan Perubahan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 12: KELOLA MENGAPA KAMI (WHY US) */}
+        {activeTab === "why-us" && (
+          <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+              <div>
+                <h3 className="text-lg font-extrabold text-brand-charcoal dark:text-white">
+                  Kelola Poin "Mengapa Harus Master UPVC?"
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  Atur poin keunggulan layanan & garansi yang tampil di section "Mengapa Kami".
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingWhyUs(null);
+                  setWhyTitle(""); setWhyDesc(""); setWhyIcon("ShieldCheck"); setWhyOrder(whyUsList.length + 1);
+                  setIsWhyUsModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-2xl text-xs transition-all shadow-lg shadow-orange-500/20"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Poin Baru</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {whyUsList.map((item) => (
+                <div key={item.id} className="bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-2xl text-brand-orange font-bold">
+                        {item.icon === "ShieldCheck" && <ShieldCheck className="w-6 h-6 text-brand-orange" />}
+                        {item.icon === "Factory" && <Factory className="w-6 h-6 text-brand-orange" />}
+                        {item.icon === "Ruler" && <Ruler className="w-6 h-6 text-brand-orange" />}
+                        {item.icon === "Palette" && <Palette className="w-6 h-6 text-brand-orange" />}
+                        {item.icon === "Lock" && <Lock className="w-6 h-6 text-brand-orange" />}
+                        {item.icon === "Headphones" && <Headphones className="w-6 h-6 text-brand-orange" />}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingWhyUs(item);
+                            setWhyTitle(item.title);
+                            setWhyDesc(item.description);
+                            setWhyIcon(item.icon);
+                            setWhyOrder(item.sort_order);
+                            setIsWhyUsModalOpen(true);
+                          }}
+                          className="p-2 text-zinc-500 hover:text-brand-orange hover:bg-orange-50 rounded-xl"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteWhyUs(item.id)}
+                          className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-50 rounded-xl"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <h4 className="font-bold text-brand-charcoal dark:text-white text-base mb-2">{item.title}</h4>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{item.description}</p>
+                  </div>
+                  <div className="text-[10px] text-zinc-400 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                    Urutan: #{item.sort_order}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* WHY US MODAL */}
+            {isWhyUsModalOpen && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-brand-charcoal p-6 md:p-8 rounded-3xl max-w-lg w-full border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-extrabold text-brand-charcoal dark:text-white">
+                      {editingWhyUs ? "Edit Poin Mengapa Kami" : "Tambah Poin Baru"}
+                    </h3>
+                    <button onClick={() => setIsWhyUsModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <form onSubmit={handleSaveWhyUs} className="space-y-4 text-xs">
+                    <div>
+                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Judul Poin</label>
+                      <input
+                        type="text"
+                        required
+                        value={whyTitle}
+                        onChange={(e) => setWhyTitle(e.target.value)}
+                        placeholder="Contoh: Garansi Resmi 10 Tahun"
                         className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
                       />
                     </div>
@@ -1976,44 +2334,40 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                       <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Deskripsi Singkat</label>
                       <textarea
                         rows={3}
-                        value={advDesc}
-                        onChange={(e) => setAdvDesc(e.target.value)}
-                        placeholder="Deskripsi keunggulan..."
+                        value={whyDesc}
+                        onChange={(e) => setWhyDesc(e.target.value)}
+                        placeholder="Tulis penjelasan..."
                         className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Ikon (Lucide Name)</label>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Ikon</label>
                         <select
-                          value={advIcon}
-                          onChange={(e) => setAdvIcon(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                          value={whyIcon}
+                          onChange={(e) => setWhyIcon(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white"
                         >
-                          <option value="Volume2">Volume2 (Kedap Suara)</option>
-                          <option value="Zap">Zap (Hemat Energi)</option>
-                          <option value="Droplet">Droplet (Tahan Air)</option>
-                          <option value="SunDim">SunDim (Tahan Cuaca)</option>
-                          <option value="Wind">Wind (Tahan Polusi)</option>
-                          <option value="Sparkles">Sparkles (Perawatan Mudah)</option>
-                          <option value="ShieldAlert">ShieldAlert (Anti Rayap)</option>
-                          <option value="ShieldCheck">ShieldCheck (Anti Debu)</option>
-                          <option value="Star">Star</option>
-                          <option value="Award">Award</option>
+                          <option value="ShieldCheck">ShieldCheck (Garansi)</option>
+                          <option value="Factory">Factory (Pabrikasi)</option>
+                          <option value="Ruler">Ruler (Presisi)</option>
+                          <option value="Palette">Palette (Custom Desain)</option>
+                          <option value="Lock">Lock (Penguncian Ganda)</option>
+                          <option value="Headphones">Headphones (Gratis Survei/Konsultasi)</option>
                         </select>
                       </div>
                       <div>
                         <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Urutan Tampil</label>
                         <input
                           type="number"
-                          value={advOrder}
-                          onChange={(e) => setAdvOrder(Number(e.target.value))}
-                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                          value={whyOrder}
+                          onChange={(e) => setWhyOrder(Number(e.target.value))}
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white"
                         />
                       </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                      <button type="button" onClick={() => setIsAdvantageModalOpen(false)} className="px-5 py-2.5 rounded-xl text-zinc-600 dark:text-zinc-400 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                      <button type="button" onClick={() => setIsWhyUsModalOpen(false)} className="px-5 py-2.5 rounded-xl text-zinc-600 dark:text-zinc-400 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800">
                         Batal
                       </button>
                       <button type="submit" className="px-6 py-2.5 rounded-xl bg-brand-orange text-white font-bold hover:bg-orange-600 shadow-lg shadow-orange-500/20">
@@ -2027,8 +2381,8 @@ const handleSaveSettings = async (e: React.FormEvent) => {
           </div>
         )}
 
-
         {/* TAB 11: KELOLA PERBANDINGAN MATERIAL (COMPARISONS) */}
+
         {activeTab === "comparisons" && (
           <div className="space-y-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">

@@ -4,25 +4,35 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import AdvantagesGrid from "@/components/AdvantagesGrid";
 import ColorShowcase from "@/components/ColorShowcase";
-import { getSettings, WebsiteSettings, Article, getServices } from "@/utils/db";
+import {
+  getSettings,
+  WebsiteSettings,
+  Article,
+  getServices } from "@/utils/db";
 import { Service } from "@/utils/seedData";
 import { 
-  ArrowRight, 
-  MapPin, 
-  Globe, 
-  Phone, 
-  Shield, 
-  HelpCircle, 
-  ChevronDown, 
-  Calendar, 
-  BookOpen, 
+  ArrowRight,
+  MapPin,
+  Globe,
+  Phone,
+  Shield,
+  HelpCircle,
+  ChevronDown,
+  Calendar,
+  BookOpen,
   Sparkles,
   DoorClosed,
   Grid,
   Layers,
   Utensils,
   ShowerHead,
-  Bath
+  Bath,
+  ShieldCheck,
+  Factory,
+  Ruler,
+  Palette,
+  Lock,
+  Headphones
 } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
@@ -45,12 +55,22 @@ function getYoutubeThumbnail(videoId: string) {
   return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 }
 
+
+
 export default function Home() {
   const [settings, setSettings] = useState<WebsiteSettings | null>(null);
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(null);
   const [latestArticles, setLatestArticles] = useState<Article[]>([]);
   const [socialPosts, setSocialPosts] = useState<any[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [whyUsItems, setWhyUsItems] = useState<any[]>([
+    { id: 1, title: "Garansi Resmi 10 Tahun", description: "Jaminan penuh bahwa profil UPVC kami tidak akan retak, melengkung, maupun memudar warnanya akibat paparan cuaca ekstrim tropis.", icon: "ShieldCheck" },
+    { id: 2, title: "Pabrikasi Langsung", description: "Diproduksi langsung di workshop utama kami, menjamin biaya efisien tanpa perantara serta kontrol kualitas berlapis yang ketat.", icon: "Factory" },
+    { id: 3, title: "Presisi Milimeter & Rapih", description: "Pemasangan presisi tinggi oleh tim pemasang profesional tersertifikasi untuk menjamin peredaman suara dan anti-bocor air yang sempurna.", icon: "Ruler" },
+    { id: 4, title: "Custom Desain Bebas", description: "Sesuaikan bentuk, ukuran, tipe bukaan (ayun, geser, lipat) serta aksen warna profil dengan gaya arsitektur rumah impian Anda.", icon: "Palette" },
+    { id: 5, title: "Multipoint Lock System", description: "Dilengkapi dengan sistem penguncian ganda di beberapa titik untuk memberikan tingkat keamanan ekstra bagi seluruh anggota keluarga.", icon: "Lock" },
+    { id: 6, title: "Gratis Konsultasi & Survei", description: "Dapatkan layanan konsultasi estimasi biaya serta survei pengukuran fisik ke lokasi proyek Anda secara cuma-cuma (wilayah Jabodetabek).", icon: "Headphones" }
+  ]);
   const [comparisons, setComparisons] = useState<any[]>([
     { id: 1, feature_name: "Ketahanan Rayap & Hama", upvc_value: "100% Anti Rayap", wood_value: "Sangat Rentan Keropos", alum_value: "Tahan Rayap", upvc_status: "positive", wood_status: "negative", alum_status: "neutral" },
     { id: 2, feature_name: "Kedap Suara (Kebisingan)", upvc_value: "Sangat Redam (Hingga 40dB)", wood_value: "Sedang", alum_value: "Bising (Transmisi Getar)", upvc_status: "positive", wood_status: "neutral", alum_status: "negative" },
@@ -103,6 +123,11 @@ export default function Home() {
       }
     }
     loadSettings();
+    fetch("/api/why-us")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data) && data.length > 0) setWhyUsItems(data.filter((i: any) => i.active !== 0)); })
+      .catch(err => console.error("Error loading why-us:", err));
+
     fetch("/api/comparisons")
       .then(res => res.json())
       .then(data => { if (Array.isArray(data) && data.length > 0) setComparisons(data); })
@@ -356,71 +381,22 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Card 1 */}
-            <div className="p-8 rounded-3xl bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 hover:border-brand-orange/40 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center text-brand-orange mb-6 font-bold group-hover:scale-110 transition-transform">
-                🛡️
+            {whyUsItems.map((item: any) => (
+              <div key={item.id} className="p-8 rounded-3xl bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 hover:border-brand-orange/40 hover:shadow-lg transition-all duration-300 group">
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center text-brand-orange mb-6 font-bold group-hover:scale-110 transition-transform">
+                  {item.icon === "Factory" && <Factory className="w-6 h-6 text-brand-orange" />}
+                  {item.icon === "Ruler" && <Ruler className="w-6 h-6 text-brand-orange" />}
+                  {item.icon === "Palette" && <Palette className="w-6 h-6 text-brand-orange" />}
+                  {item.icon === "Lock" && <Lock className="w-6 h-6 text-brand-orange" />}
+                  {item.icon === "Headphones" && <Headphones className="w-6 h-6 text-brand-orange" />}
+                  {(item.icon === "ShieldCheck" || !["Factory","Ruler","Palette","Lock","Headphones"].includes(item.icon)) && <ShieldCheck className="w-6 h-6 text-brand-orange" />}
+                </div>
+                <h3 className="text-lg font-bold text-brand-charcoal dark:text-white mb-3">{item.title}</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                  {item.description}
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-brand-charcoal dark:text-white mb-3">Garansi Resmi 10 Tahun</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Jaminan penuh bahwa profil UPVC kami tidak akan retak, melengkung, maupun memudar warnanya akibat paparan cuaca ekstrim tropis.
-              </p>
-            </div>
-
-            {/* Card 2 */}
-            <div className="p-8 rounded-3xl bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 hover:border-brand-orange/40 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center text-brand-orange mb-6 font-bold group-hover:scale-110 transition-transform">
-                🏭
-              </div>
-              <h3 className="text-lg font-bold text-brand-charcoal dark:text-white mb-3">Pabrikasi Langsung</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Diproduksi langsung di workshop utama kami, menjamin biaya efisien tanpa perantara serta kontrol kualitas berlapis yang ketat.
-              </p>
-            </div>
-
-            {/* Card 3 */}
-            <div className="p-8 rounded-3xl bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 hover:border-brand-orange/40 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center text-brand-orange mb-6 font-bold group-hover:scale-110 transition-transform">
-                📐
-              </div>
-              <h3 className="text-lg font-bold text-brand-charcoal dark:text-white mb-3">Presisi Milimeter & Rapih</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Pemasangan presisi tinggi oleh tim pemasang profesional tersertifikasi untuk menjamin peredaman suara dan anti-bocor air yang sempurna.
-              </p>
-            </div>
-
-            {/* Card 4 */}
-            <div className="p-8 rounded-3xl bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 hover:border-brand-orange/40 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center text-brand-orange mb-6 font-bold group-hover:scale-110 transition-transform">
-                🎛️
-              </div>
-              <h3 className="text-lg font-bold text-brand-charcoal dark:text-white mb-3">Custom Desain Bebas</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Sesuaikan bentuk, ukuran, tipe bukaan (ayun, geser, lipat) serta aksen warna profil dengan gaya arsitektur rumah impian Anda.
-              </p>
-            </div>
-
-            {/* Card 5 */}
-            <div className="p-8 rounded-3xl bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 hover:border-brand-orange/40 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center text-brand-orange mb-6 font-bold group-hover:scale-110 transition-transform">
-                🔑
-              </div>
-              <h3 className="text-lg font-bold text-brand-charcoal dark:text-white mb-3">Multipoint Lock System</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Dilengkapi dengan sistem penguncian ganda di beberapa titik untuk memberikan tingkat keamanan ekstra bagi seluruh anggota keluarga.
-              </p>
-            </div>
-
-            {/* Card 6 */}
-            <div className="p-8 rounded-3xl bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 hover:border-brand-orange/40 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center text-brand-orange mb-6 font-bold group-hover:scale-110 transition-transform">
-                🚗
-              </div>
-              <h3 className="text-lg font-bold text-brand-charcoal dark:text-white mb-3">Gratis Konsultasi & Survei</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Dapatkan layanan konsultasi estimasi biaya serta survei pengukuran fisik ke lokasi proyek Anda secara cuma-cuma (wilayah Jabodetabek).
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>

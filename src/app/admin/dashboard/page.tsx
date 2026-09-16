@@ -47,7 +47,7 @@ import {
   Edit, 
   Trash2, 
   X, 
-  ShieldCheck, 
+  ShieldCheck, CheckCircle, Award, Volume2, Zap, Droplet, SunDim, Wind, 
   Trash,
   Upload,
   FolderOpen,
@@ -94,8 +94,51 @@ const getServiceIcon = (iconName: string) => {
 export default function AdminDashboard() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
-  const [activeTab, setActiveTab] = useState<"products" | "articles" | "settings" | "leads" | "social-wall" | "testimonials" | "services" | "project" | "users">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "articles" | "settings" | "leads" | "social-wall" | "testimonials" | "services" | "project" | "users" | "advantages" | "comparisons">("products");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Advantages States
+  const [advantagesList, setAdvantagesList] = useState<any[]>([]);
+  const [isAdvantageModalOpen, setIsAdvantageModalOpen] = useState(false);
+  const [editingAdvantage, setEditingAdvantage] = useState<any>(null);
+  const [advTitle, setAdvTitle] = useState("");
+  const [advDesc, setAdvDesc] = useState("");
+  const [advIcon, setAdvIcon] = useState("Volume2");
+  const [advOrder, setAdvOrder] = useState(1);
+
+  // Comparisons States
+  const [comparisonsList, setComparisonsList] = useState<any[]>([]);
+  const [isCompModalOpen, setIsCompModalOpen] = useState(false);
+  const [editingComp, setEditingComp] = useState<any>(null);
+  const [compFeature, setCompFeature] = useState("");
+  const [compUpvcVal, setCompUpvcVal] = useState("");
+  const [compWoodVal, setCompWoodVal] = useState("");
+  const [compWoodStatus, setCompWoodStatus] = useState("negative");
+  const [compAlumVal, setCompAlumVal] = useState("");
+  const [compAlumStatus, setCompAlumStatus] = useState("neutral");
+  const [compOrder, setCompOrder] = useState(1);
+
+  // Fetch Advantages
+  const loadAdvantages = () => {
+    fetch("/api/advantages")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setAdvantagesList(data); })
+      .catch(err => console.error(err));
+  };
+
+  // Fetch Comparisons
+  const loadComparisons = () => {
+    fetch("/api/comparisons")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setComparisonsList(data); })
+      .catch(err => console.error(err));
+  };
+
+  useEffect(() => {
+    loadAdvantages();
+    loadComparisons();
+  }, []);
+
 
   // Services states
   const [services, setServices] = useState<Service[]>([]);
@@ -744,7 +787,100 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSaveSettings = async (e: React.FormEvent) => {
+  
+  const handleSaveAdvantage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = editingAdvantage ? "PUT" : "POST";
+      const payload = {
+        id: editingAdvantage?.id,
+        title: advTitle,
+        description: advDesc,
+        icon: advIcon,
+        sort_order: Number(advOrder),
+        active: 1
+      };
+      const res = await fetch("/api/advantages", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(editingAdvantage ? "Keunggulan diperbarui!" : "Keunggulan ditambahkan!");
+        setIsAdvantageModalOpen(false);
+        setEditingAdvantage(null);
+        setAdvTitle(""); setAdvDesc(""); setAdvIcon("Volume2"); setAdvOrder(1);
+        loadAdvantages();
+      } else {
+        toast.error(data.error || "Gagal menyimpan keunggulan");
+      }
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleDeleteAdvantage = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus keunggulan ini?")) return;
+    try {
+      const res = await fetch(`/api/advantages?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Keunggulan berhasil dihapus");
+        loadAdvantages();
+      }
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleSaveComparison = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = editingComp ? "PUT" : "POST";
+      const payload = {
+        id: editingComp?.id,
+        feature_name: compFeature,
+        upvc_value: compUpvcVal,
+        wood_value: compWoodVal,
+        wood_status: compWoodStatus,
+        alum_value: compAlumVal,
+        alum_status: compAlumStatus,
+        sort_order: Number(compOrder)
+      };
+      const res = await fetch("/api/comparisons", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(editingComp ? "Perbandingan diperbarui!" : "Perbandingan ditambahkan!");
+        setIsCompModalOpen(false);
+        setEditingComp(null);
+        setCompFeature(""); setCompUpvcVal(""); setCompWoodVal(""); setCompAlumVal("");
+        loadComparisons();
+      } else {
+        toast.error(data.error || "Gagal menyimpan perbandingan");
+      }
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleDeleteComparison = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus fitur perbandingan ini?")) return;
+    try {
+      const res = await fetch(`/api/comparisons?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Fitur perbandingan berhasil dihapus");
+        loadComparisons();
+      }
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingSettings(true);
     const result = await updateSettings({
@@ -1231,6 +1367,8 @@ export default function AdminDashboard() {
               {activeTab === "services" && "Kelola Layanan"}
               {activeTab === "project" && "Kelola Project"}
               {activeTab === "settings" && "Pengaturan Aplikasi"}
+              {activeTab === "advantages" && "Kelola 8 Pilar Keunggulan"}
+              {activeTab === "comparisons" && "Kelola Perbandingan Material"}
               {activeTab === "users" && "Kelola User & Admin"}
               {activeTab === "articles" && "Artikel / Blog"}
               {activeTab === "leads" && "Leads Chatbot"}
@@ -1726,7 +1864,325 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {activeTab === "settings" && (
+        
+        {/* TAB 10: KELOLA KEUNGGULAN (ADVANTAGES) */}
+        {activeTab === "advantages" && (
+          <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+              <div>
+                <h3 className="text-lg font-extrabold text-brand-charcoal dark:text-white">
+                  Daftar Pilar Keunggulan Material
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  Atur poin keunggulan UPVC yang ditampilkan pada Landing Page.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingAdvantage(null);
+                  setAdvTitle(""); setAdvDesc(""); setAdvIcon("Volume2"); setAdvOrder(advantagesList.length + 1);
+                  setIsAdvantageModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-2xl text-xs transition-all shadow-lg shadow-orange-500/20"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Keunggulan</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {advantagesList.map((item) => (
+                <div key={item.id} className="bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative group">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-2xl text-brand-orange font-bold">
+                      {item.icon}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingAdvantage(item);
+                          setAdvTitle(item.title);
+                          setAdvDesc(item.description);
+                          setAdvIcon(item.icon);
+                          setAdvOrder(item.sort_order);
+                          setIsAdvantageModalOpen(true);
+                        }}
+                        className="p-2 text-zinc-500 hover:text-brand-orange hover:bg-orange-50 dark:hover:bg-zinc-800 rounded-xl transition-all"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAdvantage(item.id)}
+                        className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-zinc-800 rounded-xl transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <h4 className="font-bold text-brand-charcoal dark:text-white text-base mb-2">{item.title}</h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{item.description}</p>
+                  <div className="text-[10px] text-zinc-400 font-mono">Urutan: #{item.sort_order}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* ADVANTAGES MODAL */}
+            {isAdvantageModalOpen && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-brand-charcoal p-6 md:p-8 rounded-3xl max-w-lg w-full border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-extrabold text-brand-charcoal dark:text-white">
+                      {editingAdvantage ? "Edit Keunggulan" : "Tambah Keunggulan Baru"}
+                    </h3>
+                    <button onClick={() => setIsAdvantageModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <form onSubmit={handleSaveAdvantage} className="space-y-4 text-xs">
+                    <div>
+                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Judul Keunggulan</label>
+                      <input
+                        type="text"
+                        required
+                        value={advTitle}
+                        onChange={(e) => setAdvTitle(e.target.value)}
+                        placeholder="Contoh: Kedap Suara"
+                        className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Deskripsi Singkat</label>
+                      <textarea
+                        rows={3}
+                        value={advDesc}
+                        onChange={(e) => setAdvDesc(e.target.value)}
+                        placeholder="Deskripsi keunggulan..."
+                        className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Ikon (Lucide Name)</label>
+                        <select
+                          value={advIcon}
+                          onChange={(e) => setAdvIcon(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                        >
+                          <option value="Volume2">Volume2 (Kedap Suara)</option>
+                          <option value="Zap">Zap (Hemat Energi)</option>
+                          <option value="Droplet">Droplet (Tahan Air)</option>
+                          <option value="SunDim">SunDim (Tahan Cuaca)</option>
+                          <option value="Wind">Wind (Tahan Polusi)</option>
+                          <option value="Sparkles">Sparkles (Perawatan Mudah)</option>
+                          <option value="ShieldAlert">ShieldAlert (Anti Rayap)</option>
+                          <option value="ShieldCheck">ShieldCheck (Anti Debu)</option>
+                          <option value="Star">Star</option>
+                          <option value="Award">Award</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Urutan Tampil</label>
+                        <input
+                          type="number"
+                          value={advOrder}
+                          onChange={(e) => setAdvOrder(Number(e.target.value))}
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                      <button type="button" onClick={() => setIsAdvantageModalOpen(false)} className="px-5 py-2.5 rounded-xl text-zinc-600 dark:text-zinc-400 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                        Batal
+                      </button>
+                      <button type="submit" className="px-6 py-2.5 rounded-xl bg-brand-orange text-white font-bold hover:bg-orange-600 shadow-lg shadow-orange-500/20">
+                        Simpan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+
+        {/* TAB 11: KELOLA PERBANDINGAN MATERIAL (COMPARISONS) */}
+        {activeTab === "comparisons" && (
+          <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-brand-charcoal p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+              <div>
+                <h3 className="text-lg font-extrabold text-brand-charcoal dark:text-white">
+                  Fitur Perbandingan Material
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  Atur perbandingan performa antara UPVC, Kayu Tradisional, dan Aluminium Biasa.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingComp(null);
+                  setCompFeature(""); setCompUpvcVal(""); setCompWoodVal(""); setCompAlumVal("");
+                  setCompWoodStatus("negative"); setCompAlumStatus("neutral"); setCompOrder(comparisonsList.length + 1);
+                  setIsCompModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-2xl text-xs transition-all shadow-lg shadow-orange-500/20"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Perbandingan</span>
+              </button>
+            </div>
+
+            <div className="bg-white dark:bg-brand-charcoal rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 font-bold text-zinc-500 uppercase">
+                  <tr>
+                    <th className="p-4">Fitur Perbandingan</th>
+                    <th className="p-4 text-emerald-600">UPVC Premium</th>
+                    <th className="p-4">Kayu Tradisional</th>
+                    <th className="p-4">Aluminium Biasa</th>
+                    <th className="p-4 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                  {comparisonsList.map((item) => (
+                    <tr key={item.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50">
+                      <td className="p-4 font-bold text-brand-charcoal dark:text-white">{item.feature_name}</td>
+                      <td className="p-4 text-emerald-600 font-bold">✓ {item.upvc_value}</td>
+                      <td className={`p-4 ${item.wood_status === 'negative' ? 'text-red-500 font-semibold' : 'text-zinc-500'}`}>
+                        {item.wood_status === 'negative' ? '✕ ' : '• '}{item.wood_value}
+                      </td>
+                      <td className={`p-4 ${item.alum_status === 'negative' ? 'text-red-500 font-semibold' : 'text-zinc-500'}`}>
+                        {item.alum_status === 'negative' ? '✕ ' : '• '}{item.alum_value}
+                      </td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingComp(item);
+                              setCompFeature(item.feature_name);
+                              setCompUpvcVal(item.upvc_value);
+                              setCompWoodVal(item.wood_value);
+                              setCompWoodStatus(item.wood_status || "negative");
+                              setCompAlumVal(item.alum_value);
+                              setCompAlumStatus(item.alum_status || "neutral");
+                              setCompOrder(item.sort_order || 1);
+                              setIsCompModalOpen(true);
+                            }}
+                            className="p-1.5 text-zinc-500 hover:text-brand-orange hover:bg-orange-50 rounded-lg"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteComparison(item.id)}
+                            className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* COMPARISONS MODAL */}
+            {isCompModalOpen && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-brand-charcoal p-6 md:p-8 rounded-3xl max-w-xl w-full border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-extrabold text-brand-charcoal dark:text-white">
+                      {editingComp ? "Edit Perbandingan" : "Tambah Perbandingan Baru"}
+                    </h3>
+                    <button onClick={() => setIsCompModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <form onSubmit={handleSaveComparison} className="space-y-4 text-xs">
+                    <div>
+                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Nama Fitur Perbandingan</label>
+                      <input
+                        type="text"
+                        required
+                        value={compFeature}
+                        onChange={(e) => setCompFeature(e.target.value)}
+                        placeholder="Contoh: Ketahanan Rayap & Hama"
+                        className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-emerald-600 mb-1">Performa UPVC Premium</label>
+                      <input
+                        type="text"
+                        required
+                        value={compUpvcVal}
+                        onChange={(e) => setCompUpvcVal(e.target.value)}
+                        placeholder="Contoh: 100% Anti Rayap"
+                        className="w-full px-4 py-3 rounded-xl border border-emerald-500/30 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Kayu Tradisional</label>
+                        <input
+                          type="text"
+                          value={compWoodVal}
+                          onChange={(e) => setCompWoodVal(e.target.value)}
+                          placeholder="Contoh: Sangat Rentan Keropos"
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Status Kayu</label>
+                        <select
+                          value={compWoodStatus}
+                          onChange={(e) => setCompWoodStatus(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white"
+                        >
+                          <option value="negative">Negatif (Warna Merah ✕)</option>
+                          <option value="neutral">Netral (Warna Abu-abu •)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Aluminium Biasa</label>
+                        <input
+                          type="text"
+                          value={compAlumVal}
+                          onChange={(e) => setCompAlumVal(e.target.value)}
+                          placeholder="Contoh: Tahan Rayap"
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Status Aluminium</label>
+                        <select
+                          value={compAlumStatus}
+                          onChange={(e) => setCompAlumStatus(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 text-brand-charcoal dark:text-white"
+                        >
+                          <option value="neutral">Netral (Warna Abu-abu •)</option>
+                          <option value="negative">Negatif (Warna Merah ✕)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                      <button type="button" onClick={() => setIsCompModalOpen(false)} className="px-5 py-2.5 rounded-xl text-zinc-600 dark:text-zinc-400 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                        Batal
+                      </button>
+                      <button type="submit" className="px-6 py-2.5 rounded-xl bg-brand-orange text-white font-bold hover:bg-orange-600 shadow-lg shadow-orange-500/20">
+                        Simpan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+{activeTab === "settings" && (
           /* =======================================================
              TAB 2: WEBSITE SETTINGS (SEO & AI CONFIGURATION)
              ======================================================= */

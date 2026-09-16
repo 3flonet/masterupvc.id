@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { 
   Volume2, 
   Zap, 
@@ -9,58 +9,72 @@ import {
   ShieldAlert, 
   Sparkles, 
   ShieldCheck, 
-  Wind 
+  Wind,
+  CheckCircle,
+  Star,
+  Award,
+  Layers,
+  LucideIcon
 } from "lucide-react";
 
-interface AdvantageItem {
+interface DynamicAdvantage {
+  id: number;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: string;
+  sort_order: number;
+  active: number;
 }
 
+const ICON_MAP: Record<string, LucideIcon> = {
+  Volume2,
+  Zap,
+  Droplet,
+  SunDim,
+  ShieldAlert,
+  Sparkles,
+  ShieldCheck,
+  Wind,
+  CheckCircle,
+  Star,
+  Award,
+  Layers
+};
+
+const DEFAULT_ADVANTAGES: DynamicAdvantage[] = [
+  { id: 1, title: "Kedap Suara", description: "Sistem double-sealing meredam kebisingan luar hingga 40dB, menciptakan ketenangan maksimal.", icon: "Volume2", sort_order: 1, active: 1 },
+  { id: 2, title: "Hemat Energi", description: "Konduktivitas termal yang rendah menjaga suhu ruangan tetap stabil dan menghemat penggunaan AC.", icon: "Zap", sort_order: 2, active: 1 },
+  { id: 3, title: "Tahan Air & Hujan", description: "Profil dirancang khusus dengan saluran pembuangan air terintegrasi, bebas bocor saat hujan deras.", icon: "Droplet", sort_order: 3, active: 1 },
+  { id: 4, title: "Tahan Cuaca Ekstrem", description: "Formula anti-UV berkualitas tinggi mencegah keretakan, kelapukan, dan perubahan warna akibat sinar matahari.", icon: "SunDim", sort_order: 4, active: 1 },
+  { id: 5, title: "Tahan Polusi", description: "Material solid yang kebal terhadap korosi asam akibat hujan asam dan udara perkotaan yang pekat.", icon: "Wind", sort_order: 5, active: 1 },
+  { id: 6, title: "Perawatan Mudah", description: "Permukaan halus yang tidak memerlukan pengecatan ulang. Cukup dibersihkan dengan kain basah.", icon: "Sparkles", sort_order: 6, active: 1 },
+  { id: 7, title: "Anti Rayap", description: "100% bebas dari ancaman rayap dan serangga perusak kayu lainnya sepanjang masa.", icon: "ShieldAlert", sort_order: 7, active: 1 },
+  { id: 8, title: "Anti Debu", description: "Kerapatan presisi tinggi mencegah partikel debu halus menyelinap masuk ke dalam rumah.", icon: "ShieldCheck", sort_order: 8, active: 1 }
+];
+
 export default function AdvantagesGrid() {
-  const advantages: AdvantageItem[] = [
-    {
-      title: "Kedap Suara",
-      description: "Sistem double-sealing meredam kebisingan luar hingga 40dB, menciptakan ketenangan maksimal.",
-      icon: <Volume2 className="w-8 h-8 text-brand-orange" />,
-    },
-    {
-      title: "Hemat Energi",
-      description: "Konduktivitas termal yang rendah menjaga suhu ruangan tetap stabil dan menghemat penggunaan AC.",
-      icon: <Zap className="w-8 h-8 text-brand-orange" />,
-    },
-    {
-      title: "Tahan Air & Hujan",
-      description: "Profil dirancang khusus dengan saluran pembuangan air terintegrasi, bebas bocor saat hujan deras.",
-      icon: <Droplet className="w-8 h-8 text-brand-orange" />,
-    },
-    {
-      title: "Tahan Cuaca Ekstrem",
-      description: "Formula anti-UV berkualitas tinggi mencegah keretakan, kelapukan, dan perubahan warna akibat sinar matahari.",
-      icon: <SunDim className="w-8 h-8 text-brand-orange" />,
-    },
-    {
-      title: "Tahan Polusi",
-      description: "Material solid yang kebal terhadap korosi asam akibat hujan asam dan udara perkotaan yang pekat.",
-      icon: <Wind className="w-8 h-8 text-brand-orange" />,
-    },
-    {
-      title: "Perawatan Mudah",
-      description: "Permukaan halus yang tidak memerlukan pengecatan ulang. Cukup dibersihkan dengan kain basah.",
-      icon: <Sparkles className="w-8 h-8 text-brand-orange" />,
-    },
-    {
-      title: "Anti Rayap",
-      description: "100% bebas dari ancaman rayap dan serangga perusak kayu lainnya sepanjang masa.",
-      icon: <ShieldAlert className="w-8 h-8 text-brand-orange" />,
-    },
-    {
-      title: "Anti Debu",
-      description: "Kerapatan presisi tinggi mencegah partikel debu halus menyelinap masuk ke dalam rumah.",
-      icon: <ShieldCheck className="w-8 h-8 text-brand-orange" />,
-    },
-  ];
+  const [advantages, setAdvantages] = useState<DynamicAdvantage[]>(DEFAULT_ADVANTAGES);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/advantages")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const activeOnly = data.filter((item: DynamicAdvantage) => item.active !== 0);
+          if (activeOnly.length > 0) {
+            setAdvantages(activeOnly);
+          }
+        }
+      })
+      .catch(err => console.error("Error loading advantages:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const renderIcon = (iconName: string) => {
+    const IconComponent = ICON_MAP[iconName] || Sparkles;
+    return <IconComponent className="w-8 h-8 text-brand-orange" />;
+  };
 
   return (
     <section id="keunggulan" className="py-24 bg-white dark:bg-zinc-950 transition-colors">
@@ -71,7 +85,7 @@ export default function AdvantagesGrid() {
             Kenapa UPVC?
           </span>
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-brand-charcoal dark:text-white mt-4">
-            8 Pilar Keunggulan Material Master UPVC
+            {advantages.length} Pilar Keunggulan Material Master UPVC
           </h2>
           <p className="text-zinc-500 dark:text-zinc-400 mt-4 text-lg">
             Investasi jangka panjang terbaik untuk kenyamanan, keamanan, dan keindahan hunian keluarga Anda.
@@ -80,9 +94,9 @@ export default function AdvantagesGrid() {
 
         {/* Grid Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {advantages.map((adv, idx) => (
+          {advantages.map((adv) => (
             <div 
-              key={idx}
+              key={adv.id}
               className="group relative p-8 rounded-3xl bg-zinc-50 dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 hover:border-brand-orange/40 dark:hover:border-brand-orange/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
             >
               {/* Subtle background glow on hover */}
@@ -90,7 +104,7 @@ export default function AdvantagesGrid() {
               
               {/* Icon Container */}
               <div className="inline-flex p-4 bg-orange-50 dark:bg-orange-950/30 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-                {adv.icon}
+                {renderIcon(adv.icon)}
               </div>
 
               {/* Title & Description */}

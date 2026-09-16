@@ -63,7 +63,34 @@ async function ensureSettingsColumnsExist() {
 }
 
 // GET SETTINGS
+
+let isAboutMigrated = false;
+async function ensureAboutColumns() {
+  if (isAboutMigrated) return;
+  try {
+    const columns = [
+      "about_badge VARCHAR(255) NULL",
+      "about_title VARCHAR(255) NULL",
+      "about_desc1 TEXT NULL",
+      "about_desc2 TEXT NULL",
+      "about_quote TEXT NULL",
+      "about_team_title VARCHAR(255) NULL"
+    ];
+    for (const col of columns) {
+      try {
+        await executeQuery(`ALTER TABLE settings ADD COLUMN ${col}`);
+      } catch (e) {
+        // ignore if exists
+      }
+    }
+  } catch (err) {
+    console.error("ensureAboutColumns error:", err);
+  }
+  isAboutMigrated = true;
+}
+
 export async function GET() {
+  await ensureAboutColumns();
   try {
     await ensureSettingsColumnsExist();
     const rows = await executeQuery("SELECT * FROM settings ORDER BY id ASC LIMIT 1");
@@ -158,6 +185,7 @@ export async function GET() {
 
 // UPDATE OR SAVE SETTINGS
 export async function POST(request: Request) {
+  await ensureAboutColumns();
   try {
     await ensureSettingsColumnsExist();
     const { 
@@ -206,7 +234,13 @@ export async function POST(request: Request) {
       smtp_user,
       smtp_pass,
       smtp_sender_name,
-      smtp_secure
+      smtp_secure,
+      about_badge,
+      about_title,
+      about_desc1,
+      about_desc2,
+      about_quote,
+      about_team_title
     } = await request.json();
     
     if (!seo_title) {
@@ -265,7 +299,13 @@ export async function POST(request: Request) {
           smtp_user = ?,
           smtp_pass = ?,
           smtp_sender_name = ?,
-          smtp_secure = ?
+          smtp_secure = ?,
+          about_badge = ?,
+          about_title = ?,
+          about_desc1 = ?,
+          about_desc2 = ?,
+          about_quote = ?,
+          about_team_title = ?
          WHERE id = 1`,
         [
           seo_title, 
@@ -313,7 +353,13 @@ export async function POST(request: Request) {
           smtp_user || null,
           smtp_pass || null,
           smtp_sender_name || null,
-          smtp_secure !== undefined && smtp_secure !== null ? Number(smtp_secure) : 0
+          smtp_secure !== undefined && smtp_secure !== null ? Number(smtp_secure) : 0,
+          about_badge || null,
+          about_title || null,
+          about_desc1 || null,
+          about_desc2 || null,
+          about_quote || null,
+          about_team_title || null
         ]
       );
     } else {

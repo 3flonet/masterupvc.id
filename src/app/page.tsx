@@ -51,6 +51,12 @@ export default function Home() {
   const [latestArticles, setLatestArticles] = useState<Article[]>([]);
   const [socialPosts, setSocialPosts] = useState<any[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [comparisons, setComparisons] = useState<any[]>([
+    { id: 1, feature_name: "Ketahanan Rayap & Hama", upvc_value: "100% Anti Rayap", wood_value: "Sangat Rentan Keropos", alum_value: "Tahan Rayap", upvc_status: "positive", wood_status: "negative", alum_status: "neutral" },
+    { id: 2, feature_name: "Kedap Suara (Kebisingan)", upvc_value: "Sangat Redam (Hingga 40dB)", wood_value: "Sedang", alum_value: "Bising (Transmisi Getar)", upvc_status: "positive", wood_status: "neutral", alum_status: "negative" },
+    { id: 3, feature_name: "Ketahanan Api (Safety)", upvc_value: "Mencegah Penyebaran Api", wood_value: "Sangat Mudah Terbakar", alum_value: "Memuai / Melengkung", upvc_status: "positive", wood_status: "negative", alum_status: "neutral" },
+    { id: 4, feature_name: "Terhadap Cuaca & Korosi", upvc_value: "Bebas Karat & Garansi 10 Tahun", wood_value: "Lapuk, Muai & Menyusut", alum_value: "Korosi / Karat Putih", upvc_status: "positive", wood_status: "negative", alum_status: "negative" }
+  ]);
 
   useEffect(() => {
     async function loadSettings() {
@@ -97,6 +103,10 @@ export default function Home() {
       }
     }
     loadSettings();
+    fetch("/api/comparisons")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data) && data.length > 0) setComparisons(data); })
+      .catch(err => console.error(err));
   }, []);
 
   useEffect(() => {
@@ -238,96 +248,22 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {/* Row 1 */}
-                <tr className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
-                  <td className="p-6 text-sm font-bold text-brand-charcoal dark:text-white">
-                    🛡️ Ketahanan Rayap & Hama
-                  </td>
-                  <td className="p-6 text-sm font-extrabold text-emerald-500 bg-brand-orange/5 dark:bg-brand-orange/10">
-                    ✅ 100% Anti Rayap
-                  </td>
-                  <td className="p-6 text-sm text-red-500">
-                    ❌ Sangat Rentan Keropos
-                  </td>
-                  <td className="p-6 text-sm text-zinc-600 dark:text-zinc-400">
-                    ✅ Tahan Rayap
-                  </td>
-                </tr>
-                {/* Row 2 */}
-                <tr className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
-                  <td className="p-6 text-sm font-bold text-brand-charcoal dark:text-white">
-                    🔊 Kedap Suara (Kebisingan)
-                  </td>
-                  <td className="p-6 text-sm font-extrabold text-emerald-500 bg-brand-orange/5 dark:bg-brand-orange/10">
-                    ✅ Sangat Redam (Hingga 40dB)
-                  </td>
-                  <td className="p-6 text-sm text-zinc-600 dark:text-zinc-400">
-                    ⚠️ Sedang
-                  </td>
-                  <td className="p-6 text-sm text-red-500">
-                    ❌ Bising (Transmisi Getar)
-                  </td>
-                </tr>
-                {/* Row 3 */}
-                <tr className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
-                  <td className="p-6 text-sm font-bold text-brand-charcoal dark:text-white">
-                    🔥 Ketahanan Api (Safety)
-                  </td>
-                  <td className="p-6 text-sm font-extrabold text-emerald-500 bg-brand-orange/5 dark:bg-brand-orange/10">
-                    ✅ Mencegah Penyebaran Api
-                  </td>
-                  <td className="p-6 text-sm text-red-500">
-                    ❌ Sangat Mudah Terbakar
-                  </td>
-                  <td className="p-6 text-sm text-zinc-600 dark:text-zinc-400">
-                    ⚠️ Memuai / Melengkung
-                  </td>
-                </tr>
-                {/* Row 4 */}
-                <tr className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
-                  <td className="p-6 text-sm font-bold text-brand-charcoal dark:text-white">
-                    🌦️ Terhadap Cuaca & Korosi
-                  </td>
-                  <td className="p-6 text-sm font-extrabold text-emerald-500 bg-brand-orange/5 dark:bg-brand-orange/10">
-                    ✅ Bebas Karat & Garansi 10 Tahun
-                  </td>
-                  <td className="p-6 text-sm text-red-500">
-                    ❌ Lapuk, Muai & Menyusut
-                  </td>
-                  <td className="p-6 text-sm text-red-500">
-                    ❌ Korosi / Karat Putih
-                  </td>
-                </tr>
-                {/* Row 5 */}
-                <tr className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
-                  <td className="p-6 text-sm font-bold text-brand-charcoal dark:text-white">
-                    🧼 Perawatan Rutin
-                  </td>
-                  <td className="p-6 text-sm font-extrabold text-emerald-500 bg-brand-orange/5 dark:bg-brand-orange/10">
-                    ✅ Cukup Dilap & Bebas Biaya
-                  </td>
-                  <td className="p-6 text-sm text-red-500">
-                    ❌ Wajib Cat Ulang Berkala
-                  </td>
-                  <td className="p-6 text-sm text-zinc-600 dark:text-zinc-400">
-                    ⚠️ Perlu Pembersihan Rutin
-                  </td>
-                </tr>
-                {/* Row 6 */}
-                <tr className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
-                  <td className="p-6 text-sm font-bold text-brand-charcoal dark:text-white">
-                    💰 Investasi Jangka Panjang
-                  </td>
-                  <td className="p-6 text-sm font-extrabold text-emerald-500 bg-brand-orange/5 dark:bg-brand-orange/10">
-                    ✅ Sangat Hemat (Sekali untuk Selamanya)
-                  </td>
-                  <td className="p-6 text-sm text-red-500">
-                    ❌ Boros (Biaya Servis & Rayap)
-                  </td>
-                  <td className="p-6 text-sm text-zinc-600 dark:text-zinc-400">
-                    ⚠️ Sedang (Rawan Bocor Sela Karet)
-                  </td>
-                </tr>
+                {comparisons.map((row: any) => (
+                  <tr key={row.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
+                    <td className="p-6 text-sm font-bold text-brand-charcoal dark:text-white">
+                      {row.feature_name}
+                    </td>
+                    <td className="p-6 text-sm font-extrabold text-emerald-500 bg-brand-orange/5 dark:bg-brand-orange/10">
+                      ✓ {row.upvc_value}
+                    </td>
+                    <td className={"p-6 text-sm " + (row.wood_status === 'negative' ? 'text-red-500' : 'text-zinc-600 dark:text-zinc-400')}>
+                      {(row.wood_status === 'negative' ? '✕ ' : '• ') + row.wood_value}
+                    </td>
+                    <td className={"p-6 text-sm " + (row.alum_status === 'negative' ? 'text-red-500' : 'text-zinc-600 dark:text-zinc-400')}>
+                      {(row.alum_status === 'negative' ? '✕ ' : '• ') + row.alum_value}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

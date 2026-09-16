@@ -1201,7 +1201,7 @@ const handleSaveSettings = async (e: React.FormEvent) => {
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col md:flex-row transition-colors">
       
       {/* Sidebar Navigation */}
-      <aside className={`w-full md:w-64 bg-white dark:bg-brand-charcoal border-b md:border-b-0 md:border-r border-zinc-200/50 dark:border-zinc-800/50 flex flex-col justify-between p-6 z-40 shrink-0`}>
+      <aside className="w-full md:w-64 bg-white dark:bg-brand-charcoal border-b md:border-b-0 md:border-r border-zinc-200/50 dark:border-zinc-800/50 flex flex-col justify-between p-6 z-40 shrink-0">
         <div className="space-y-8">
           
           {/* Logo / Brand Header */}
@@ -1215,16 +1215,10 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                 <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Master UPVC</p>
               </div>
             </div>
-            <button 
-              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)} 
-              className="md:hidden p-1.5 border border-zinc-200 dark:border-zinc-800 rounded-lg"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
           </div>
 
-          {/* Nav Links */}
-          <nav className={`space-y-2 ${mobileSidebarOpen ? "block" : "hidden md:block"}`}>
+          {/* Navigation Links */}
+          <nav className="space-y-1">
             <button
               onClick={() => {
                 setActiveTab("products");
@@ -1252,6 +1246,34 @@ const handleSaveSettings = async (e: React.FormEvent) => {
             >
               <Sparkles className="w-4 h-4" />
               Kelola Layanan
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("advantages");
+                setMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "advantages"
+                  ? "bg-brand-orange text-white shadow-md shadow-brand-orange/15"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+              }`}
+            >
+              <Award className="w-4 h-4" />
+              Kelola Keunggulan
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("comparisons");
+                setMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "comparisons"
+                  ? "bg-brand-orange text-white shadow-md shadow-brand-orange/15"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+              }`}
+            >
+              <CheckCircle className="w-4 h-4" />
+              Kelola Perbandingan
             </button>
             <button
               onClick={() => {

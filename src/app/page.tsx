@@ -132,7 +132,7 @@ export default function Home() {
     loadSettings();
     fetch("/api/products")
       .then(res => res.json())
-      .then(data => { if (Array.isArray(data) && data.length > 0) setFeaturedProducts(data.slice(0, 4)); })
+      .then(data => { if (Array.isArray(data) && data.length > 0) setFeaturedProducts(data.slice(0, 8)); })
       .catch(err => console.error(err));
 
     fetch("/api/workflow-steps")
@@ -423,8 +423,8 @@ export default function Home() {
       {/* Catalog Digital CTA Section */}
       <section id="katalog" className="py-24 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800 transition-colors relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-brand-orange/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-8">
-          <div className="max-w-3xl mx-auto space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-12">
+          <div className="text-center space-y-4 max-w-3xl mx-auto">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-orange uppercase bg-orange-100 dark:bg-orange-950/50 px-4 py-2 rounded-full border border-orange-200 dark:border-orange-900/30">
               <Sparkles className="w-3.5 h-3.5" /> Katalog Digital
             </span>
@@ -435,7 +435,43 @@ export default function Home() {
               Jelajahi berbagai tipe produk UPVC terbaik kami mulai dari tipe sliding, folding, swing, hingga kaca mati dengan varian warna serat kayu jati, hitam, putih, dan abu-abu.
             </p>
           </div>
-          <div>
+
+          {/* Featured Products Dynamic Grid */}
+          {featuredProducts.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+              {featuredProducts.slice(0, 8).map((product: any, idx: number) => (
+                <Link
+                  key={product.id || idx}
+                  href="/katalog"
+                  className="group bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden hover:border-brand-orange/40 hover:shadow-lg hover:shadow-brand-orange/5 transition-all duration-300"
+                >
+                  {product.image_url ? (
+                    <div className="aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-[4/3] bg-gradient-to-br from-brand-orange/10 to-orange-50 dark:from-brand-orange/5 dark:to-zinc-800 flex items-center justify-center">
+                      <span className="text-4xl">🪟</span>
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <p className="text-xs font-black text-brand-orange uppercase tracking-wider mb-1 truncate">
+                      {product.category_name || product.type || "Produk UPVC"}
+                    </p>
+                    <h3 className="text-sm font-bold text-brand-charcoal dark:text-white leading-tight line-clamp-2">
+                      {product.name}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center">
             <Link
               href="/katalog"
               className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange/95 text-white font-bold px-8 py-4 rounded-2xl text-sm transition-all shadow-lg shadow-brand-orange/15 hover:shadow-brand-orange/25 transform hover:-translate-y-0.5"
@@ -597,7 +633,7 @@ export default function Home() {
           </div>
 
           {/* Steps Timeline Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(workflowSteps.length, 4)} gap-8 lg:gap-10 relative mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 relative mb-16">
             {/* Background connecting line on desktop */}
             {workflowSteps.length > 1 && (
               <div className="hidden lg:block absolute top-[52px] left-[12%] right-[12%] h-[1px] border-t border-dashed border-brand-orange/30 z-0 pointer-events-none" />

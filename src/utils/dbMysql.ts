@@ -21,13 +21,13 @@ export function getMysqlPool() {
       password,
       database,
       waitForConnections: true,
-      connectionLimit: 5, // lowered to 5 to avoid connection limits in local dev environments
-      queueLimit: 0
+      connectionLimit: 10,
+      queueLimit: 0,
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 10000
     });
 
-    if (process.env.NODE_ENV !== "production") {
-      globalForMysql.mysqlPool = newPool;
-    }
+    globalForMysql.mysqlPool = newPool;
     return newPool;
   } catch (err) {
     console.error("Failed to initialize MySQL pool:", err);

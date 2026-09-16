@@ -4340,6 +4340,19 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                 />
               </div>
 
+              <div className="flex items-center gap-3 p-3.5 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl border border-amber-500/30">
+                <input
+                  type="checkbox"
+                  id="isFeaturedToggle"
+                  checked={isFeatured}
+                  onChange={(e) => setIsFeatured(e.target.checked)}
+                  className="w-5 h-5 accent-brand-orange rounded cursor-pointer"
+                />
+                <label htmlFor="isFeaturedToggle" className="text-xs font-bold text-brand-charcoal dark:text-white cursor-pointer select-none flex items-center gap-1.5">
+                  ⭐ Tampilkan di Beranda (Section Katalog Beranda)
+                </label>
+              </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Kategori</label>

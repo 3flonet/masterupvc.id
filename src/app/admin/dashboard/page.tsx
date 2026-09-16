@@ -304,6 +304,7 @@ export default function AdminDashboard() {
   const [tier, setTier] = useState("Hemat");
   const [description, setDescription] = useState("");
   const [dimensions, setDimensions] = useState("");
+  const [isFeatured, setIsFeatured] = useState<boolean>(false);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
 
   // Form Category states
@@ -631,6 +632,7 @@ export default function AdminDashboard() {
     }
     setDescription("");
     setDimensions("");
+    setIsFeatured(false);
     setVariants([{ color: "Putih", price: 0, discount_price: null, image_url: null, image_urls: [] }]);
   };
 
@@ -694,6 +696,7 @@ export default function AdminDashboard() {
       tier,
       description,
       dimensions,
+      is_featured: isFeatured ? 1 : 0,
       variants,
     });
 

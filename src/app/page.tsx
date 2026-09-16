@@ -132,7 +132,10 @@ export default function Home() {
     loadSettings();
     fetch("/api/products")
       .then(res => res.json())
-      .then(data => { if (Array.isArray(data) && data.length > 0) setFeaturedProducts(data.slice(0, 8)); })
+      .then(data => { if (Array.isArray(data) && data.length > 0) {
+          const featuredOnly = data.filter((p: any) => p.is_featured === 1);
+          setFeaturedProducts(featuredOnly.length > 0 ? featuredOnly : data.slice(0, 8));
+        } })
       .catch(err => console.error(err));
 
     fetch("/api/workflow-steps")
@@ -440,53 +443,66 @@ export default function Home() {
           {featuredProducts.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
               {featuredProducts.slice(0, 8).map((product: any, idx: number) => {
-                const minPrice = product.variants && product.variants.length > 0
-                  ? Math.min(...product.variants.map((v: any) => v.price || 0))
+                const variants = product.variants || [];
+                const firstVar = variants[0] || {};
+                const currentPrice = firstVar.price || 0;
+                const originalPrice = firstVar.original_price || firstVar.normal_price || 0;
+                const hasDiscount = originalPrice > currentPrice;
+                const discountPercent = hasDiscount
+                  ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
                   : 0;
+
                 return (
                   <Link
                     key={product.id || idx}
                     href="/katalog"
-                    className="group bg-white dark:bg-zinc-900/90 border border-zinc-200/70 dark:border-zinc-800/80 rounded-2xl overflow-hidden hover:border-brand-orange/50 hover:shadow-xl hover:shadow-brand-orange/10 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
+                    className="group bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl overflow-hidden hover:border-brand-orange/50 hover:shadow-xl hover:shadow-brand-orange/10 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
                   >
                     <div>
-                      {product.image_url ? (
-                        <div className="aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
+                      {/* Image / Graphic Container */}
+                      <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-amber-50 to-orange-100/40 dark:from-zinc-800 dark:to-zinc-900/80 relative flex items-center justify-center">
+                        {product.image_url ? (
                           <img
                             src={product.image_url}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
-                          {product.tier && (
-                            <span className="absolute top-2.5 right-2.5 text-[10px] font-black uppercase tracking-wider bg-brand-charcoal/80 text-white backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
-                              {product.tier}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="aspect-[4/3] bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-zinc-900/5 dark:from-orange-500/10 dark:to-zinc-800/80 flex flex-col items-center justify-center p-4 relative group-hover:from-orange-500/15 transition-all">
-                          {product.tier && (
-                            <span className="absolute top-2.5 right-2.5 text-[10px] font-black uppercase tracking-wider bg-brand-orange/10 text-brand-orange border border-brand-orange/20 px-2.5 py-0.5 rounded-full">
-                              {product.tier}
-                            </span>
-                          )}
-                          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 shadow-md flex items-center justify-center text-brand-orange mb-2 group-hover:scale-110 transition-transform">
-                            {product.category_name?.toLowerCase().includes("pintu") ? (
-                              <DoorClosed className="w-7 h-7" />
-                            ) : (
-                              <Grid className="w-7 h-7" />
-                            )}
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-center p-3">
+                            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 shadow-md flex items-center justify-center text-brand-orange mb-1 group-hover:scale-110 transition-transform">
+                              {product.category_name?.toLowerCase().includes("pintu") ? (
+                                <DoorClosed className="w-7 h-7" />
+                              ) : (
+                                <Grid className="w-7 h-7" />
+                              )}
+                            </div>
+                            <span className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500">Master UPVC</span>
                           </div>
-                          <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 text-center">Master UPVC Premium</span>
-                        </div>
-                      )}
-                      <div className="p-4 space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-extrabold text-brand-orange uppercase tracking-wider bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded-md border border-orange-200/50 dark:border-orange-900/40">
-                            {product.category_name || "Produk UPVC"}
+                        )}
+
+                        {/* Discount Badge */}
+                        {hasDiscount && (
+                          <span className="absolute top-2.5 left-2.5 text-[10px] font-black uppercase tracking-wider bg-red-600 text-white shadow-md px-2.5 py-1 rounded-full">
+                            Hemat {discountPercent}%
+                          </span>
+                        )}
+
+                        {/* Tier Badge */}
+                        {product.tier && (
+                          <span className="absolute top-2.5 right-2.5 text-[10px] font-black uppercase tracking-wider bg-amber-500/90 text-white backdrop-blur-md px-2.5 py-0.5 rounded-full shadow-sm">
+                            {product.tier}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Content Info */}
+                      <div className="p-4 space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                          <span className="font-semibold text-brand-orange">
+                            {product.category_name || "UPVC Premium"}
                           </span>
                           {product.dimensions && (
-                            <span className="text-[10px] text-zinc-400 font-mono">
+                            <span className="font-mono text-[10px]">
                               {product.dimensions}
                             </span>
                           )}
@@ -497,20 +513,26 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="p-4 pt-0 mt-2 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between text-xs pt-3">
+                    {/* Footer Price */}
+                    <div className="p-4 pt-0 mt-2 border-t border-zinc-100 dark:border-zinc-800/60 flex items-end justify-between pt-3">
                       <div>
-                        {minPrice > 0 ? (
+                        {hasDiscount && (
+                          <span className="text-[10px] text-zinc-400 line-through block">
+                            Rp {originalPrice.toLocaleString("id-ID")}
+                          </span>
+                        )}
+                        {currentPrice > 0 ? (
                           <>
                             <span className="text-[10px] text-zinc-400 block">Mulai dari</span>
                             <span className="font-extrabold text-brand-charcoal dark:text-white text-sm">
-                              Rp {minPrice.toLocaleString("id-ID")}
+                              Rp {currentPrice.toLocaleString("id-ID")}
                             </span>
                           </>
                         ) : (
-                          <span className="font-medium text-zinc-400 italic">Harga via Kustom</span>
+                          <span className="font-medium text-zinc-400 italic text-xs">Konsultasi Harga</span>
                         )}
                       </div>
-                      <span className="text-brand-orange font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      <span className="text-brand-orange font-bold text-xs flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                         Detail <ArrowRight className="w-3.5 h-3.5" />
                       </span>
                     </div>

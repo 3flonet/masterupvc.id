@@ -13,6 +13,7 @@ export async function GET() {
       tier: item.tier,
       description: item.description || "",
       dimensions: item.dimensions || "",
+      is_featured: item.is_featured ? 1 : 0,
       variants: typeof item.variants === "string" ? JSON.parse(item.variants) : (item.variants || []),
     }));
     return NextResponse.json(parsedRows);
@@ -25,18 +26,18 @@ export async function GET() {
 // ADD NEW PRODUCT
 export async function POST(request: Request) {
   try {
-    const { name, category_id, tier, description, dimensions, variants } = await request.json();
+    const { name, category_id, tier, description, dimensions, variants, is_featured } = await request.json();
     if (!name || !category_id || !tier || !variants) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
     const variantsJson = JSON.stringify(variants);
     const result = await executeQuery(
-      "INSERT INTO products (name, category_id, tier, description, dimensions, variants) VALUES (?, ?, ?, ?, ?, ?)",
-      [name, category_id, tier, description || null, dimensions || null, variantsJson]
+      "INSERT INTO products (name, category_id, tier, description, dimensions, variants, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [name, category_id, tier, description || null, dimensions || null, variantsJson, is_featured ? 1 : 0]
     );
 
-    return NextResponse.json({ id: result.insertId, name, category_id, tier, description, dimensions, variants });
+    return NextResponse.json({ id: result.insertId, name, category_id, tier, description, dimensions, variants, is_featured: is_featured ? 1 : 0 });
   } catch (err: any) {
     console.error("POST products API error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -46,15 +47,15 @@ export async function POST(request: Request) {
 // UPDATE PRODUCT
 export async function PUT(request: Request) {
   try {
-    const { id, name, category_id, tier, description, dimensions, variants } = await request.json();
+    const { id, name, category_id, tier, description, dimensions, variants, is_featured } = await request.json();
     if (!id || !name || !category_id || !tier || !variants) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
     const variantsJson = JSON.stringify(variants);
     await executeQuery(
-      "UPDATE products SET name = ?, category_id = ?, tier = ?, description = ?, dimensions = ?, variants = ? WHERE id = ?",
-      [name, category_id, tier, description || null, dimensions || null, variantsJson, id]
+      "UPDATE products SET name = ?, category_id = ?, tier = ?, description = ?, dimensions = ?, variants = ?, is_featured = ? WHERE id = ?",
+      [name, category_id, tier, description || null, dimensions || null, variantsJson, is_featured ? 1 : 0, id]
     );
 
     return NextResponse.json({ success: true });

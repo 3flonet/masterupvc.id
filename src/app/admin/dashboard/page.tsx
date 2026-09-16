@@ -101,7 +101,8 @@ import {
   Volume2,
   Wind,
   X,
-  Zap
+  Zap,
+  ListOrdered
 } from "lucide-react";
 import ArticlesPanel from "@/components/ArticlesPanel";
 import LeadsPanel from "@/components/LeadsPanel";

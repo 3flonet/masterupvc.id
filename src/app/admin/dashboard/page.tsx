@@ -143,6 +143,13 @@ export default function AdminDashboard() {
       .catch(err => console.error(err));
   };
 
+  const loadWorkflowSteps = () => {
+    fetch("/api/workflow-steps")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setWorkflowStepsList(data); })
+      .catch(err => console.error(err));
+  };
+
   useEffect(() => {
     loadWhyUs();
     loadWorkflowSteps();
@@ -5214,6 +5221,71 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 bg-zinc-50 dark:bg-zinc-900/50 p-4.5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50">
                   {services.map((srv) => {
                     const isChecked = pServicesUsed.includes(srv.title);
+
+  // Workflow Steps Handlers
+  const handleToggleWorkflowActive = async (step: any) => {
+    try {
+      const res = await fetch("/api/workflow-steps", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: step.id, is_active: step.is_active ? 0 : 1 }),
+      });
+      if (res.ok) {
+        showToast(step.is_active ? "Step dinonaktifkan" : "Step diaktifkan", "success");
+        loadWorkflowSteps();
+      }
+    } catch (err) {
+      showToast("Gagal mengubah status", "error");
+    }
+  };
+
+  const handleDeleteWorkflowStep = async (id: number) => {
+    if (!confirm("Hapus step ini?")) return;
+    try {
+      const res = await fetch("/api/workflow-steps?id=" + id, { method: "DELETE" });
+      if (res.ok) {
+        showToast("Step berhasil dihapus!", "success");
+        loadWorkflowSteps();
+      }
+    } catch (err) {
+      showToast("Gagal menghapus step", "error");
+    }
+  };
+
+  const handleSaveWorkflowStep = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = editingWorkflowStep ? "PUT" : "POST";
+      const payload: any = {
+        step_number: workflowStepNum,
+        icon: workflowIcon,
+        title: workflowTitle,
+        description: workflowDesc,
+        sort_order: Number(workflowOrder),
+        is_active: Number(workflowActive),
+      };
+      if (editingWorkflowStep) payload.id = editingWorkflowStep.id;
+      const res = await fetch("/api/workflow-steps", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(editingWorkflowStep ? "Step berhasil diperbarui!" : "Step berhasil ditambahkan!", "success");
+        setIsWorkflowModalOpen(false);
+        setEditingWorkflowStep(null);
+        setWorkflowTitle(""); setWorkflowDesc(""); setWorkflowIcon("💬"); setWorkflowOrder(1); setWorkflowActive(1);
+        loadWorkflowSteps();
+      } else {
+        showToast(data.error || "Gagal menyimpan step", "error");
+      }
+    } catch (err) {
+      showToast("Terjadi kesalahan", "error");
+    }
+  };
+
+
                     return (
                       <label key={srv.id} className="flex items-center gap-2.5 text-xs font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer">
                         <input

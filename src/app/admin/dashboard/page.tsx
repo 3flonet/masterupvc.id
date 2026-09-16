@@ -48,6 +48,7 @@ import { Product,
   Project } from "@/utils/seedData";
 
 
+
 import {
   Award,
   Bath,
@@ -121,7 +122,7 @@ const getServiceIcon = (iconName: string) => {
 export default function AdminDashboard() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
-  const [activeTab, setActiveTab] = useState<"products" | "articles" | "settings" | "leads" | "social-wall" | "testimonials" | "services" | "project" | "users" | "advantages" | "comparisons" | "why-us">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "articles" | "settings" | "leads" | "social-wall" | "testimonials" | "services" | "project" | "users" | "advantages" | "comparisons" | "why-us" | "workflow">("products");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Why Us States
@@ -143,6 +144,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadWhyUs();
+    loadWorkflowSteps();
   }, []);
 
   const handleSaveWhyUs = async (e: React.FormEvent) => {
@@ -202,6 +204,15 @@ export default function AdminDashboard() {
 
   // Comparisons States
   const [comparisonsList, setComparisonsList] = useState<any[]>([]);
+  const [workflowStepsList, setWorkflowStepsList] = useState<any[]>([]);
+  const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
+  const [editingWorkflowStep, setEditingWorkflowStep] = useState<any | null>(null);
+  const [workflowStepNum, setWorkflowStepNum] = useState("Step 01");
+  const [workflowIcon, setWorkflowIcon] = useState("💬");
+  const [workflowTitle, setWorkflowTitle] = useState("");
+  const [workflowDesc, setWorkflowDesc] = useState("");
+  const [workflowOrder, setWorkflowOrder] = useState(1);
+  const [workflowActive, setWorkflowActive] = useState(1);
   const [isCompModalOpen, setIsCompModalOpen] = useState(false);
   const [editingComp, setEditingComp] = useState<any>(null);
   const [compFeature, setCompFeature] = useState("");
@@ -1371,6 +1382,20 @@ const handleSaveSettings = async (e: React.FormEvent) => {
             </button>
             <button
               onClick={() => {
+                setActiveTab("workflow");
+                setMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "workflow"
+                  ? "bg-brand-orange text-white shadow-md shadow-brand-orange/15"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+              }`}
+            >
+              <ListOrdered className="w-4 h-4" />
+              Kelola Alur Pemesanan
+            </button>
+            <button
+              onClick={() => {
                 setActiveTab("comparisons");
                 setMobileSidebarOpen(false);
               }}
@@ -1499,6 +1524,7 @@ const handleSaveSettings = async (e: React.FormEvent) => {
               {activeTab === "settings" && "Pengaturan Aplikasi"}
               {activeTab === "advantages" && "Kelola 8 Pilar Keunggulan"}
               {activeTab === "comparisons" && "Kelola Perbandingan Material"}
+              {activeTab === "workflow" && "Kelola Alur Pemesanan & Pemasangan"}
               {activeTab === "users" && "Kelola User & Admin"}
               {activeTab === "articles" && "Artikel / Blog"}
               {activeTab === "leads" && "Leads Chatbot"}
@@ -2372,6 +2398,274 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                       </button>
                       <button type="submit" className="px-6 py-2.5 rounded-xl bg-brand-orange text-white font-bold hover:bg-orange-600 shadow-lg shadow-orange-500/20">
                         Simpan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 12: KELOLA ALUR PEMESANAN & PEMASANGAN (WORKFLOW STEPS) */}
+        {activeTab === "workflow" && (
+          <div className="space-y-8">
+            {/* Header Glassmorphic Banner */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 border border-zinc-800 p-6 md:p-8 text-white shadow-xl">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-brand-orange/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/20 border border-brand-orange/30 text-brand-orange text-xs font-bold mb-3">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Dynamic Workflow Timeline</span>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                    Alur Pemesanan & Pemasangan
+                  </h2>
+                  <p className="text-zinc-400 text-xs md:text-sm mt-1 max-w-xl">
+                    Tambah, hapus, urutkan, atau edit tahapan alur kerja pemesanan produk Master UPVC yang secara otomatis tampil di landing page.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="px-4 py-2.5 rounded-2xl bg-zinc-800/80 border border-zinc-700/60 text-xs font-bold flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                    <span>Total: {workflowStepsList.length} Step</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingWorkflowStep(null);
+                      setWorkflowStepNum(`Step 0${workflowStepsList.length + 1}`);
+                      setWorkflowIcon("💬");
+                      setWorkflowTitle("");
+                      setWorkflowDesc("");
+                      setWorkflowOrder(workflowStepsList.length + 1);
+                      setWorkflowActive(1);
+                      setIsWorkflowModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-2xl text-xs transition-all shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transform hover:-translate-y-0.5"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Step Baru</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Workflow Steps Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {workflowStepsList.map((step: any, idx: number) => (
+                <div
+                  key={step.id}
+                  className={`group relative bg-white dark:bg-brand-charcoal border rounded-3xl p-6 transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-xl ${
+                    step.is_active === 1
+                      ? "border-zinc-200/80 dark:border-zinc-800 hover:border-brand-orange/50"
+                      : "border-red-200 dark:border-red-900/30 opacity-70 bg-zinc-50/50 dark:bg-zinc-900/40"
+                  }`}
+                >
+                  <div>
+                    {/* Header Top Row */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/40 dark:border-orange-900/40 flex items-center justify-center text-2xl">
+                        {step.icon || "💬"}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black tracking-wider text-brand-orange bg-brand-orange/10 px-2.5 py-1 rounded-full uppercase">
+                          {step.step_number || `Step 0${idx + 1}`}
+                        </span>
+                        <button
+                          onClick={() => handleToggleWorkflowActive(step)}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-all ${
+                            step.is_active === 1
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                              : "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                          }`}
+                        >
+                          {step.is_active === 1 ? "Aktif" : "Draf"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <h3 className="font-extrabold text-base text-brand-charcoal dark:text-white mb-2 group-hover:text-brand-orange transition-colors">
+                      {step.title}
+                    </h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">
+                      {step.desc}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+                    <span className="text-[10px] text-zinc-400 font-medium">
+                      Urutan: <strong className="text-zinc-700 dark:text-zinc-200">{step.sort_order || idx + 1}</strong>
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setEditingWorkflowStep(step);
+                          setWorkflowStepNum(step.step_number || `Step 0${idx + 1}`);
+                          setWorkflowIcon(step.icon || "💬");
+                          setWorkflowTitle(step.title || "");
+                          setWorkflowDesc(step.desc || "");
+                          setWorkflowOrder(step.sort_order || idx + 1);
+                          setWorkflowActive(step.is_active !== undefined ? step.is_active : 1);
+                          setIsWorkflowModalOpen(true);
+                        }}
+                        className="p-2 rounded-xl text-zinc-400 hover:text-brand-orange hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-all cursor-pointer"
+                        title="Edit Step"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteWorkflowStep(step.id)}
+                        className="p-2 rounded-xl text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer"
+                        title="Hapus Step"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal Add/Edit Workflow Step */}
+            {isWorkflowModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white dark:bg-brand-charcoal border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+                  <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-brand-orange flex items-center justify-center font-bold text-lg">
+                        {workflowIcon}
+                      </div>
+                      <div>
+                        <h3 className="font-extrabold text-base text-brand-charcoal dark:text-white">
+                          {editingWorkflowStep ? "Edit Step Alur" : "Tambah Step Alur Baru"}
+                        </h3>
+                        <p className="text-xs text-zinc-400">Atur judul, label step, ikon, dan deskripsi tahapan</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setIsWorkflowModalOpen(false)}
+                      className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-xl transition-all"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveWorkflowStep} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Label Step
+                        </label>
+                        <input
+                          type="text"
+                          value={workflowStepNum}
+                          onChange={(e) => setWorkflowStepNum(e.target.value)}
+                          placeholder="misal: Step 01"
+                          className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-brand-charcoal dark:text-white font-medium focus:outline-none focus:border-brand-orange"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Urutan (Sort Order)
+                        </label>
+                        <input
+                          type="number"
+                          value={workflowOrder}
+                          onChange={(e) => setWorkflowOrder(Number(e.target.value))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-brand-charcoal dark:text-white font-medium focus:outline-none focus:border-brand-orange"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Pilih Ikon / Emoji
+                      </label>
+                      <div className="flex items-center gap-2 mb-2">
+                        {["💬", "📋", "👷", "🛡️", "📐", "🚛", "🔧", "✨", "📞", "📝"].map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => setWorkflowIcon(emoji)}
+                            className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg border transition-all ${
+                              workflowIcon === emoji
+                                ? "border-brand-orange bg-orange-50 dark:bg-orange-950/40 scale-110 shadow-sm"
+                                : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                            }`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="text"
+                        value={workflowIcon}
+                        onChange={(e) => setWorkflowIcon(e.target.value)}
+                        placeholder="Atau ketik emoji/karakter ikon kustom"
+                        className="w-full px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-brand-charcoal dark:text-white focus:outline-none focus:border-brand-orange"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Judul Step Tahapan
+                      </label>
+                      <input
+                        type="text"
+                        value={workflowTitle}
+                        onChange={(e) => setWorkflowTitle(e.target.value)}
+                        placeholder="misal: Konsultasi & Ukur Lokasi"
+                        className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-brand-charcoal dark:text-white font-medium focus:outline-none focus:border-brand-orange"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Deskripsi Penjelasan
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={workflowDesc}
+                        onChange={(e) => setWorkflowDesc(e.target.value)}
+                        placeholder="Jelaskan secara singkat apa yang dilakukan pada tahap ini..."
+                        className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-brand-charcoal dark:text-white font-medium focus:outline-none focus:border-brand-orange"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Status Publikasi
+                      </label>
+                      <select
+                        value={workflowActive}
+                        onChange={(e) => setWorkflowActive(Number(e.target.value))}
+                        className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-brand-charcoal dark:text-white font-medium focus:outline-none focus:border-brand-orange"
+                      >
+                        <option value={1}>Aktif (Tampil di Landing Page)</option>
+                        <option value={0}>Draf (Sembunyikan)</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                      <button
+                        type="button"
+                        onClick={() => setIsWorkflowModalOpen(false)}
+                        className="px-5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-2.5 rounded-xl bg-brand-orange text-white text-xs font-bold hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all"
+                      >
+                        Simpan Step Alur
                       </button>
                     </div>
                   </form>

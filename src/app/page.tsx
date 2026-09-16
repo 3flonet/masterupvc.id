@@ -63,6 +63,13 @@ export default function Home() {
   const [latestArticles, setLatestArticles] = useState<Article[]>([]);
   const [socialPosts, setSocialPosts] = useState<any[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [workflowSteps, setWorkflowSteps] = useState<any[]>([
+    { id: 1, step_number: "Step 01", icon: "💬", title: "Konsultasi", desc: "Diskusikan model, ukuran kusen, jendela/pintu, dan pilihan warna kustom sesuai kebutuhan ruang Anda." },
+    { id: 2, step_number: "Step 02", icon: "📋", title: "Penawaran Harga", desc: "Dapatkan rincian estimasi biaya transparan, opsi material terbaik, dan proposal penawaran harga resmi." },
+    { id: 3, step_number: "Step 03", icon: "👷", title: "Proses Pemasangan", desc: "Survei pengukuran fisik presisi ke lokasi proyek Anda, diikuti perakitan fabrikasi dan instalasi oleh tim ahli." },
+    { id: 4, step_number: "Step 04", icon: "🛡️", title: "Finish & Garansi", desc: "Serah terima pekerjaan dengan jaminan kerapian maksimal, garansi ketahanan produk, dan kepuasan pelanggan." }
+  ]);
   const [whyUsItems, setWhyUsItems] = useState<any[]>([
     { id: 1, title: "Garansi Resmi 10 Tahun", description: "Jaminan penuh bahwa profil UPVC kami tidak akan retak, melengkung, maupun memudar warnanya akibat paparan cuaca ekstrim tropis.", icon: "ShieldCheck" },
     { id: 2, title: "Pabrikasi Langsung", description: "Diproduksi langsung di workshop utama kami, menjamin biaya efisien tanpa perantara serta kontrol kualitas berlapis yang ketat.", icon: "Factory" },
@@ -123,6 +130,16 @@ export default function Home() {
       }
     }
     loadSettings();
+    fetch("/api/products")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data) && data.length > 0) setFeaturedProducts(data.slice(0, 4)); })
+      .catch(err => console.error(err));
+
+    fetch("/api/workflow-steps")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data) && data.length > 0) setWorkflowSteps(data.filter((s: any) => s.is_active !== 0)); })
+      .catch(err => console.error("Error loading workflow-steps:", err));
+
     fetch("/api/why-us")
       .then(res => res.json())
       .then(data => { if (Array.isArray(data) && data.length > 0) setWhyUsItems(data.filter((i: any) => i.active !== 0)); })
@@ -580,53 +597,30 @@ export default function Home() {
           </div>
 
           {/* Steps Timeline Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-10 relative mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(workflowSteps.length, 4)} gap-8 lg:gap-10 relative mb-16">
             {/* Background connecting line on desktop */}
-            <div className="hidden lg:block absolute top-[52px] left-[12%] right-[12%] h-[1px] border-t border-dashed border-brand-orange/30 z-0 pointer-events-none" />
+            {workflowSteps.length > 1 && (
+              <div className="hidden lg:block absolute top-[52px] left-[12%] right-[12%] h-[1px] border-t border-dashed border-brand-orange/30 z-0 pointer-events-none" />
+            )}
 
-            {[
-              {
-                step: "Step 01",
-                icon: "💬",
-                title: "Konsultasi",
-                desc: "Diskusikan model, ukuran kusen, jendela/pintu, dan pilihan warna kustom sesuai kebutuhan ruang Anda."
-              },
-              {
-                step: "Step 02",
-                icon: "📋",
-                title: "Penawaran Harga",
-                desc: "Dapatkan rincian estimasi biaya transparan, opsi material terbaik, dan proposal penawaran harga resmi."
-              },
-              {
-                step: "Step 03",
-                icon: "👷",
-                title: "Proses Pemasangan",
-                desc: "Survei pengukuran fisik presisi ke lokasi proyek Anda, diikuti perakitan fabrikasi dan instalasi oleh tim ahli."
-              },
-              {
-                step: "Step 04",
-                icon: "🛡️",
-                title: "Finish & Garansi",
-                desc: "Serah terima pekerjaan dengan jaminan kerapian maksimal, garansi ketahanan produk, dan kepuasan pelanggan."
-              }
-            ].map((item, idx) => (
-              <div key={idx} className="relative group flex-1 z-10">
+            {workflowSteps.map((item: any, idx: number) => (
+              <div key={item.id || idx} className="relative group flex-1 z-10">
                 <div className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/50 dark:border-zinc-800/50 p-8 rounded-3xl relative hover:border-brand-orange/40 transition-all duration-300 h-full flex flex-col justify-between">
                   <div>
                     <div className="w-14 h-14 bg-brand-orange/10 dark:bg-brand-orange/5 border border-brand-orange/10 rounded-2xl flex items-center justify-center text-brand-orange text-2xl font-bold mb-6 relative z-10">
-                      {item.icon}
+                      {item.icon || "💬"}
                     </div>
                     <span className="absolute top-6 right-6 text-xs font-black tracking-wider text-brand-orange bg-brand-orange/10 px-3 py-1 rounded-full uppercase">
-                      {item.step}
+                      {item.step_number || `Step 0${idx + 1}`}
                     </span>
-                    <h3 className="text-lg font-black tracking-tight mb-2">{item.title}</h3>
+                    <h3 className="text-lg font-black tracking-tight mb-2 text-brand-charcoal dark:text-white">{item.title}</h3>
                     <p className="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed">
-                      {item.desc}
+                      {item.desc || item.description}
                     </p>
                   </div>
                 </div>
                 {/* Arrow Connector between steps */}
-                {idx < 3 && (
+                {idx < workflowSteps.length - 1 && (
                   <div className="hidden lg:flex absolute top-[52px] -right-7 w-6 h-6 rounded-full bg-white dark:bg-zinc-950 border border-brand-orange/20 items-center justify-center text-[10px] text-brand-orange font-bold tracking-tighter hover:border-brand-orange transition-all duration-300 z-20 animate-slide-right-loop">
                     »
                   </div>

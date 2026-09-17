@@ -191,7 +191,9 @@ export async function POST(request: Request) {
     const { 
       seo_title, 
       seo_description, 
-      seo_keywords, 
+      seo_keywords,
+      catalog_title,
+      catalog_description, 
       favicon, 
       logo, 
       contact_address, 
@@ -256,7 +258,9 @@ export async function POST(request: Request) {
         `UPDATE settings SET 
           seo_title = ?, 
           seo_description = ?, 
-          seo_keywords = ?, 
+          seo_keywords = ?,
+          catalog_title = ?,
+          catalog_description = ?, 
           favicon = ?, 
           logo = ?, 
           contact_address = ?, 
@@ -310,7 +314,9 @@ export async function POST(request: Request) {
         [
           seo_title, 
           seo_description || null, 
-          seo_keywords || null, 
+          seo_keywords || null,
+          catalog_title || null,
+          catalog_description || null, 
           favicon || null, 
           logo || null, 
           contact_address || null, 

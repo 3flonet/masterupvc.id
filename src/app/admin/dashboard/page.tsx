@@ -648,6 +648,7 @@ export default function AdminDashboard() {
     setTier(product.tier);
     setDescription(product.description || "");
     setDimensions(product.dimensions || "");
+    setIsFeatured(product.is_featured === 1);
     setVariants(product.variants && product.variants.length > 0 
       ? product.variants.map(v => ({ 
           ...v, 
@@ -1615,12 +1616,22 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                 </h3>
                 <button
                   onClick={async () => {
-                    await updateSettings({
-                      ...settings,
+                    const currentSettings = settings || {} as any;
+                    const res = await updateSettings({
+                      ...currentSettings,
+                      seo_title: seoTitle || currentSettings.seo_title || "Master UPVC",
+                      seo_description: seoDescription || currentSettings.seo_description || "",
+                      seo_keywords: seoKeywords || currentSettings.seo_keywords || "",
                       catalog_title: catalogTitle,
                       catalog_description: catalogDescription
-                    } as any);
-                    showToast("Narasi Katalog Beranda berhasil disimpan!", "success");
+                    });
+                    if (res.success) {
+                      showToast("Narasi Katalog Beranda berhasil disimpan!", "success");
+                      const fresh = await getSettings();
+                      if (fresh) setSettings(fresh);
+                    } else {
+                      showToast(res.error || "Gagal menyimpan narasi.", "error");
+                    }
                   }}
                   className="flex items-center gap-1.5 bg-brand-orange hover:bg-brand-orange/90 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-sm shadow-brand-orange/20"
                 >

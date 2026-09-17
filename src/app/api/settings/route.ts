@@ -256,7 +256,7 @@ export async function POST(request: Request) {
 
     const rows = await executeQuery("SELECT id FROM settings WHERE id = 1");
     if (Array.isArray(rows) && rows.length > 0) {
-      await executeQuery(
+            await executeQuery(
         `UPDATE settings SET 
           seo_title = ?, 
           seo_description = ?, 
@@ -310,7 +310,8 @@ export async function POST(request: Request) {
           about_title = ?,
           about_desc1 = ?,
           about_desc2 = ?,
-          about_quote = ?
+          about_quote = ?,
+          about_team_title = ?
          WHERE id = 1`,
         [
           seo_title, 

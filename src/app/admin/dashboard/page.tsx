@@ -1616,19 +1616,17 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                 </h3>
                 <button
                   onClick={async () => {
-                    const currentSettings = settings || {} as any;
+                    const freshSettings = (await getSettings()) || ({} as any);
                     const res = await updateSettings({
-                      ...currentSettings,
-                      seo_title: seoTitle || currentSettings.seo_title || "Master UPVC",
-                      seo_description: seoDescription || currentSettings.seo_description || "",
-                      seo_keywords: seoKeywords || currentSettings.seo_keywords || "",
+                      ...freshSettings,
+                      seo_title: seoTitle || freshSettings.seo_title || "Master UPVC",
+                      seo_description: seoDescription || freshSettings.seo_description || "",
+                      seo_keywords: seoKeywords || freshSettings.seo_keywords || "",
                       catalog_title: catalogTitle,
                       catalog_description: catalogDescription
                     });
                     if (res.success) {
                       showToast("Narasi Katalog Beranda berhasil disimpan!", "success");
-                      const fresh = await getSettings();
-                      if (fresh) setSettings(fresh);
                     } else {
                       showToast(res.error || "Gagal menyimpan narasi.", "error");
                     }

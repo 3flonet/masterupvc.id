@@ -101,6 +101,8 @@ export async function GET() {
         seo_title: item.seo_title,
         seo_description: item.seo_description || "",
         seo_keywords: item.seo_keywords || "",
+        catalog_title: item.catalog_title || "Pilihan Kusen, Jendela & Pintu UPVC Premium",
+        catalog_description: item.catalog_description || "Jelajahi berbagai tipe produk UPVC terbaik kami mulai dari tipe sliding, folding, swing, hingga kaca mati dengan varian warna serat kayu jati, hitam, putih, dan abu-abu.",
         favicon: item.favicon || null,
         logo: item.logo || null,
         contact_address: item.contact_address || "",
@@ -308,8 +310,7 @@ export async function POST(request: Request) {
           about_title = ?,
           about_desc1 = ?,
           about_desc2 = ?,
-          about_quote = ?,
-          about_team_title = ?
+          about_quote = ?
          WHERE id = 1`,
         [
           seo_title, 

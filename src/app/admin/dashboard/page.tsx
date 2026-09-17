@@ -721,6 +721,7 @@ export default function AdminDashboard() {
       tier,
       description,
       dimensions,
+      is_featured: isFeatured ? 1 : 0,
       variants,
     });
 
@@ -1572,7 +1573,7 @@ const handleSaveSettings = async (e: React.FormEvent) => {
              ======================================================= */
           <div>
             {/* Header Title & Add Button */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6">
               <div>
                 <h2 className="text-2xl font-black text-brand-charcoal dark:text-white tracking-tight">Katalog Produk</h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
@@ -1590,7 +1591,7 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                 </button>
                 <button
                   onClick={() => setShowTierModal(true)}
-                  className="flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold px-4 py-3 rounded-2xl text-xs transition-all shadow-sm cursor-pointer hover:bg-zinc-100"
+                  className="flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold px-4 py-3 rounded-2xl text-xs font-bold transition-all shadow-sm cursor-pointer hover:bg-zinc-100"
                 >
                   <Layers className="w-4 h-4 text-brand-orange" />
                   Kelola Spesifikasi/Tier
@@ -1602,6 +1603,55 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                   <Plus className="w-5 h-5" />
                   Tambah Produk
                 </button>
+              </div>
+            </div>
+
+            {/* Pengaturan Narasi Beranda Box */}
+            <div className="w-full bg-orange-50/70 dark:bg-zinc-900/80 border border-orange-200/80 dark:border-zinc-800 rounded-3xl p-5 mb-8 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-orange-200/50 dark:border-zinc-800 pb-3">
+                <h3 className="text-sm font-black text-brand-charcoal dark:text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-brand-orange" />
+                  Pengaturan Narasi Judul & Subtitle Beranda (Katalog Section)
+                </h3>
+                <button
+                  onClick={async () => {
+                    await updateSettings({
+                      ...settings,
+                      catalog_title: catalogTitle,
+                      catalog_description: catalogDescription
+                    } as any);
+                    showToast("Narasi Katalog Beranda berhasil disimpan!", "success");
+                  }}
+                  className="flex items-center gap-1.5 bg-brand-orange hover:bg-brand-orange/90 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-sm shadow-brand-orange/20"
+                >
+                  <Save className="w-3.5 h-3.5" /> Simpan Narasi
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">
+                    Judul Section Beranda
+                  </label>
+                  <input
+                    type="text"
+                    value={catalogTitle}
+                    onChange={(e) => setCatalogTitle(e.target.value)}
+                    placeholder="Pilihan Kusen, Jendela & Pintu UPVC Premium"
+                    className="w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold focus:outline-none focus:border-brand-orange"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">
+                    Deskripsi Subtitle Beranda
+                  </label>
+                  <textarea
+                    value={catalogDescription}
+                    onChange={(e) => setCatalogDescription(e.target.value)}
+                    rows={2}
+                    placeholder="Jelajahi berbagai tipe produk UPVC..."
+                    className="w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold focus:outline-none focus:border-brand-orange resize-none"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1732,6 +1782,11 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                     <div>
                       {/* Image preview box */}
                       <div className="w-full h-36 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800/60 mb-4 overflow-hidden relative flex items-center justify-center">
+                        {p.is_featured === 1 && (
+                          <span className="absolute top-2.5 right-2.5 text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white shadow-md px-2.5 py-1 rounded-full z-10 flex items-center gap-1">
+                            ⭐ Beranda
+                          </span>
+                        )}
                         {p.variants && p.variants[0]?.image_url ? (
                           <img 
                             src={p.variants[0].image_url} 

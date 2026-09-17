@@ -134,7 +134,7 @@ export default function Home() {
       .then(res => res.json())
       .then(data => { if (Array.isArray(data) && data.length > 0) {
           const featuredOnly = data.filter((p: any) => p.is_featured === 1);
-          setFeaturedProducts(featuredOnly.length > 0 ? featuredOnly : data.slice(0, 8));
+          setFeaturedProducts(featuredOnly);
         } })
       .catch(err => console.error(err));
 

@@ -2599,7 +2599,7 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                           setWorkflowStepNum(step.step_number || `Step 0${idx + 1}`);
                           setWorkflowIcon(step.icon || "💬");
                           setWorkflowTitle(step.title || "");
-                          setWorkflowDesc(step.desc || "");
+                          setWorkflowDesc(step.description || step.desc || "");
                           setWorkflowOrder(step.sort_order || idx + 1);
                           setWorkflowActive(step.is_active !== undefined ? step.is_active : 1);
                           setIsWorkflowModalOpen(true);
@@ -5475,7 +5475,7 @@ const handleSaveSettings = async (e: React.FormEvent) => {
         step_number: workflowStepNum,
         icon: workflowIcon,
         title: workflowTitle,
-        description: workflowDesc,
+        description: workflowDesc, desc: workflowDesc,
         sort_order: Number(workflowOrder),
         is_active: Number(workflowActive),
       };

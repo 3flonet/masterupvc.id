@@ -25,6 +25,10 @@ export interface WebsiteSettings {
   seo_keywords: string;
   catalog_title?: string;
   catalog_description?: string;
+  hero_badge?: string;
+  hero_title?: string;
+  hero_description?: string;
+  hero_bg_image?: string | null;
   favicon: string | null;
   logo: string | null;
   contact_address: string;

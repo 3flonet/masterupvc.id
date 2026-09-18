@@ -320,6 +320,10 @@ export default function AdminDashboard() {
   const [editTierName, setEditTierName] = useState("");
 
   // Settings states
+  const [heroBadge, setHeroBadge] = useState("");
+  const [heroTitle, setHeroTitle] = useState("");
+  const [heroDescription, setHeroDescription] = useState("");
+  const [heroBgImage, setHeroBgImage] = useState<string | null>(null);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [seoKeywords, setSeoKeywords] = useState("");
@@ -490,7 +494,11 @@ export default function AdminDashboard() {
 
     const settingsData = await getSettings();
     if (settingsData) {
-      setSeoTitle(settingsData.seo_title);
+      setHeroBadge(settingsData.hero_badge || "Best Production in Town");
+        setHeroTitle(settingsData.hero_title || "Transformasi Estetika & Ketahanan Bersama [Master UPVC]");
+        setHeroDescription(settingsData.hero_description || "Produsen terpercaya kusen, pintu, dan jendela UPVC berkualitas tinggi di Indonesia.");
+        setHeroBgImage(settingsData.hero_bg_image || null);
+        setSeoTitle(settingsData.seo_title);
       setSeoDescription(settingsData.seo_description);
       setSeoKeywords(settingsData.seo_keywords);
       setCatalogTitle(settingsData.catalog_title || "Pilihan Kusen, Jendela & Pintu UPVC Premium");
@@ -1006,7 +1014,11 @@ const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingSettings(true);
     const result = await updateSettings({
-      seo_title: seoTitle,
+      hero_badge: heroBadge,
+        hero_title: heroTitle,
+        hero_description: heroDescription,
+        hero_bg_image: heroBgImage,
+        seo_title: seoTitle,
       seo_description: seoDescription,
       seo_keywords: seoKeywords,
       catalog_title: catalogTitle,
@@ -2947,7 +2959,111 @@ const handleSaveSettings = async (e: React.FormEvent) => {
 
             <form onSubmit={handleSaveSettings} className="space-y-8">
               
-              {/* Meta SEO Section */}
+              {/* Hero Section Configuration */}
+                <div className="bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm space-y-5">
+                  <h3 className="text-base font-extrabold flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                    <span className="text-brand-orange">?</span> Hero Section Beranda (Header Utama)
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                        Text Badge Hero
+                      </label>
+                      <input
+                        type="text"
+                        value={heroBadge}
+                        onChange={(e) => setHeroBadge(e.target.value)}
+                        placeholder="Best Production in Town"
+                        className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-sm font-semibold text-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-orange/30 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">
+                        Judul Utama Hero (Hero Title)
+                      </label>
+                      <p className="text-xs text-zinc-400 mb-2">
+                        ?? Tips: Bungkus kata yang ingin diberi efek warna gradasi oranye dengan kurung siku <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-brand-orange">[ ... ]</span>, contoh: <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-600 dark:text-zinc-300">Transformasi Estetika &amp; Ketahanan Bersama [Master UPVC]</span>
+                      </p>
+                      <textarea
+                        rows={2}
+                        value={heroTitle}
+                        onChange={(e) => setHeroTitle(e.target.value)}
+                        placeholder="Transformasi Estetika & Ketahanan Bersama [Master UPVC]"
+                        className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-sm font-semibold text-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-orange/30 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                        Subtitle / Deskripsi Hero
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={heroDescription}
+                        onChange={(e) => setHeroDescription(e.target.value)}
+                        placeholder="Produsen terpercaya kusen, pintu, dan jendela UPVC berkualitas tinggi di Indonesia."
+                        className="w-full px-4 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-sm font-semibold text-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-orange/30 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                        Gambar Background Hero (Opsional)
+                      </label>
+                      <p className="text-xs text-zinc-400 mb-3">
+                        Kosongkan (atau reset) jika ingin menggunakan background default pola grid. Upload gambar resolusi tinggi untuk hasil latar belakang dramatis.
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-32 h-20 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden flex items-center justify-center relative">
+                          {heroBgImage ? (
+                            <img src={heroBgImage} alt="Hero BG Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[10px] font-bold text-zinc-400 text-center px-2">Default Grid Pattern</span>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setHeroBgImage(reader.result as string);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <button
+                              type="button"
+                              className="px-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                              Upload Gambar Background
+                            </button>
+                          </div>
+                          {heroBgImage && (
+                            <button
+                              type="button"
+                              onClick={() => setHeroBgImage(null)}
+                              className="text-[10px] text-red-500 font-bold hover:underline block"
+                            >
+                              Reset Gambar Background ke Default
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meta SEO Section */}
               <div className="bg-white dark:bg-brand-charcoal border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm space-y-5">
                 <h3 className="text-base font-extrabold flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-3">
                   <span className="text-brand-orange">🔍</span> Meta SEO (Google & Bing)

@@ -57,6 +57,24 @@ function getYoutubeThumbnail(videoId: string) {
 
 
 
+// Helper to parse hero title with [text] for gradient orange highlight
+const parseHeroTitle = (title?: string) => {
+  if (!title) return "Transformasi Estetika & Ketahanan Bersama Master UPVC";
+  const parts = title.split(/(\[.*?\])/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("[") && part.endsWith("]")) {
+      const cleanText = part.slice(1, -1);
+      return (
+        <span key={index} className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-amber-500">
+          {cleanText}
+        </span>
+      );
+    }
+    return part;
+  });
+
+};
+
 export default function Home() {
   const [settings, setSettings] = useState<WebsiteSettings | null>(null);
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(null);
@@ -185,25 +203,33 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <header className="relative pt-32 pb-24 md:pt-40 md:pb-36 overflow-hidden bg-gradient-to-br from-white via-zinc-100 to-orange-50/20 dark:from-zinc-950 dark:via-zinc-900 dark:to-orange-950/10">
+      <header 
+        className={`relative pt-32 pb-24 md:pt-40 md:pb-36 overflow-hidden ${
+          settings?.hero_bg_image 
+            ? "bg-cover bg-center bg-no-repeat" 
+            : "bg-gradient-to-br from-white via-zinc-100 to-orange-50/20 dark:from-zinc-950 dark:via-zinc-900 dark:to-orange-950/10"
+        }`}
+        style={settings?.hero_bg_image ? { backgroundImage: `url(${settings.hero_bg_image})` } : undefined}
+      >
+        {settings?.hero_bg_image ? (
+          <div className="absolute inset-0 bg-zinc-950/75 dark:bg-zinc-950/80 z-0" />
+        ) : (
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        )}
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-orange/10 text-brand-orange text-xs font-semibold uppercase tracking-wider mb-6 animate-fade-in">
               <Shield className="w-3.5 h-3.5" />
-              Best Production in Town
+              {settings?.hero_badge || "Best Production in Town"}
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-brand-charcoal dark:text-white leading-[1.1] mb-8 animate-slide-up">
-              Transformasi Estetika & Ketahanan Bersama{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-amber-500">
-                {settings?.seo_title ? settings.seo_title.split(" - ")[0] : "Master UPVC"}
-              </span>
+              {parseHeroTitle(settings?.hero_title || "Transformasi Estetika & Ketahanan Bersama [Master UPVC]")}
             </h1>
 
             <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10">
-              {settings?.seo_description || "Pintu dan Jendela premium dengan bahan UPVC berkualitas tinggi yang tahan cuaca ekstrem, kedap suara, anti rayap, dan dirancang presisi untuk hunian modern Anda."}
+              {settings?.hero_description || "Produsen terpercaya kusen, pintu, dan jendela UPVC berkualitas tinggi di Indonesia."}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

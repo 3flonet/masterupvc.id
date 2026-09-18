@@ -51,6 +51,10 @@ async function ensureSettingsColumnsExist() {
       if (!columnNames.includes("smtp_pass")) missingColumns.push("smtp_pass VARCHAR(255) NULL");
       if (!columnNames.includes("smtp_sender_name")) missingColumns.push("smtp_sender_name VARCHAR(255) NULL");
       if (!columnNames.includes("smtp_secure")) missingColumns.push("smtp_secure TINYINT(1) DEFAULT 0");
+      if (!columnNames.includes("hero_badge")) missingColumns.push("hero_badge VARCHAR(255) NULL");
+      if (!columnNames.includes("hero_title")) missingColumns.push("hero_title TEXT NULL");
+      if (!columnNames.includes("hero_description")) missingColumns.push("hero_description TEXT NULL");
+      if (!columnNames.includes("hero_bg_image")) missingColumns.push("hero_bg_image LONGTEXT NULL");
 
       if (missingColumns.length > 0) {
         console.log("Migrating database settings table, adding missing columns:", missingColumns);
@@ -103,6 +107,10 @@ export async function GET() {
         seo_keywords: item.seo_keywords || "",
         catalog_title: item.catalog_title || "Pilihan Kusen, Jendela & Pintu UPVC Premium",
         catalog_description: item.catalog_description || "Jelajahi berbagai tipe produk UPVC terbaik kami mulai dari tipe sliding, folding, swing, hingga kaca mati dengan varian warna serat kayu jati, hitam, putih, dan abu-abu.",
+        hero_badge: item.hero_badge || "Best Production in Town",
+        hero_title: item.hero_title || "Transformasi Estetika & Ketahanan Bersama [Master UPVC]",
+        hero_description: item.hero_description || "Produsen terpercaya kusen, pintu, dan jendela UPVC berkualitas tinggi di Indonesia.",
+        hero_bg_image: item.hero_bg_image || null,
         favicon: item.favicon || null,
         logo: item.logo || null,
         contact_address: item.contact_address || "",
@@ -195,7 +203,11 @@ export async function POST(request: Request) {
       seo_description, 
       seo_keywords,
       catalog_title,
-      catalog_description, 
+      catalog_description,
+      hero_badge,
+      hero_title,
+      hero_description,
+      hero_bg_image, 
       favicon, 
       logo, 
       contact_address, 
@@ -262,7 +274,11 @@ export async function POST(request: Request) {
           seo_description = ?, 
           seo_keywords = ?,
           catalog_title = ?,
-          catalog_description = ?, 
+          catalog_description = ?,
+          hero_badge = ?,
+          hero_title = ?,
+          hero_description = ?,
+          hero_bg_image = ?, 
           favicon = ?, 
           logo = ?, 
           contact_address = ?, 
@@ -318,7 +334,11 @@ export async function POST(request: Request) {
           seo_description || null, 
           seo_keywords || null,
           catalog_title || null,
-          catalog_description || null, 
+          catalog_description || null,
+          hero_badge || null,
+          hero_title || null,
+          hero_description || null,
+          hero_bg_image || null, 
           favicon || null, 
           logo || null, 
           contact_address || null, 

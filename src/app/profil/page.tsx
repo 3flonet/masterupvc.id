@@ -342,22 +342,53 @@ export default function ProfilPage() {
             {/* Colors list */}
             <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-[2rem] p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
-                { name: "BLACK VIBES", color: "bg-zinc-950", border: "border-zinc-850", desc: "Elegan, modern, dan minimalis", img: "https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=300&q=80" },
-                { name: "PURE WHITE", color: "bg-white", border: "border-zinc-200", desc: "Bersih, luas, dan klasik", img: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=300&q=80" },
-                { name: "DEEP BROWN", color: "bg-amber-900", border: "border-amber-950", desc: "Hangat, alami, dan estetik", img: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=300&q=80" },
-                { name: "WOOD TEXTURE", color: "bg-amber-600", border: "border-amber-700", desc: "Golden Oak & Dark Oak", img: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=300&q=80" }
-              ].map((c) => (
-                <div key={c.name} className="flex gap-4 p-4 bg-zinc-950/40 border border-zinc-850/30 rounded-2xl items-center group/color">
-                  <div className="w-14 h-14 rounded-full border border-white/10 overflow-hidden shrink-0 shadow-lg relative bg-zinc-900">
-                    <img src={c.img} alt={c.name} className="w-full h-full object-cover transition-transform duration-500 group-hover/color:scale-110" />
-                    <span className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border border-zinc-900 shadow-inner ${c.color}`} />
+                { 
+                  name: "BLACK VIBES", 
+                  color: "bg-zinc-950", 
+                  border: "border-zinc-800", 
+                  desc: "Elegan, modern, dan minimalis", 
+                  customImg: settings?.color_image_hitam,
+                  defaultImg: "https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?auto=format&fit=crop&w=300&q=80"
+                },
+                { 
+                  name: "PURE WHITE", 
+                  color: "bg-white", 
+                  border: "border-zinc-200", 
+                  desc: "Bersih, luas, dan klasik", 
+                  customImg: settings?.color_image_putih,
+                  defaultImg: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=300&q=80"
+                },
+                { 
+                  name: "DEEP BROWN", 
+                  color: "bg-amber-900", 
+                  border: "border-amber-950", 
+                  desc: "Hangat, alami, dan estetik", 
+                  customImg: settings?.color_image_coklat,
+                  defaultImg: "https://images.unsplash.com/photo-1546484475-7f7bd55792da?auto=format&fit=crop&w=300&q=80"
+                },
+                { 
+                  name: "WOOD TEXTURE", 
+                  color: "bg-amber-600", 
+                  border: "border-amber-700", 
+                  desc: "Golden Oak & Dark Oak", 
+                  customImg: settings?.color_image_golden_oak,
+                  defaultImg: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=300&q=80"
+                }
+              ].map((c) => {
+                const displayImg = c.customImg || c.defaultImg;
+                return (
+                  <div key={c.name} className="flex gap-4 p-4 bg-zinc-950/40 border border-zinc-850/30 rounded-2xl items-center group/color">
+                    <div className="w-14 h-14 rounded-full border border-white/20 overflow-hidden shrink-0 shadow-lg relative bg-zinc-900">
+                      <img src={displayImg} alt={c.name} className="w-full h-full object-cover transition-transform duration-500 group-hover/color:scale-110" />
+                      <span className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border border-zinc-900 shadow-inner ${c.color}`} />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs font-black tracking-wide block text-white">{c.name}</span>
+                      <p className="text-[9px] text-zinc-400 leading-normal">{c.desc}</p>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-xs font-black tracking-wide block text-white">{c.name}</span>
-                    <p className="text-[9px] text-zinc-400 leading-normal">{c.desc}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

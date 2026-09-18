@@ -150,6 +150,69 @@ export default function AdminDashboard() {
       .catch(err => console.error(err));
   };
 
+  // Workflow Steps Handlers
+  const handleToggleWorkflowActive = async (step: any) => {
+    try {
+      const res = await fetch("/api/workflow-steps", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: step.id, is_active: step.is_active ? 0 : 1 }),
+      });
+      if (res.ok) {
+        showToast(step.is_active ? "Step dinonaktifkan" : "Step diaktifkan", "success");
+        loadWorkflowSteps();
+      }
+    } catch (err) {
+      showToast("Gagal mengubah status", "error");
+    }
+  };
+
+  const handleDeleteWorkflowStep = async (id: number) => {
+    if (!confirm("Hapus step ini?")) return;
+    try {
+      const res = await fetch("/api/workflow-steps?id=" + id, { method: "DELETE" });
+      if (res.ok) {
+        showToast("Step berhasil dihapus!", "success");
+        loadWorkflowSteps();
+      }
+    } catch (err) {
+      showToast("Gagal menghapus step", "error");
+    }
+  };
+
+  const handleSaveWorkflowStep = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = editingWorkflowStep ? "PUT" : "POST";
+      const payload: any = {
+        step_number: workflowStepNum,
+        icon: workflowIcon,
+        title: workflowTitle,
+        description: workflowDesc, desc: workflowDesc,
+        sort_order: Number(workflowOrder),
+        is_active: Number(workflowActive),
+      };
+      if (editingWorkflowStep) payload.id = editingWorkflowStep.id;
+      const res = await fetch("/api/workflow-steps", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(editingWorkflowStep ? "Step berhasil diperbarui!" : "Step berhasil ditambahkan!", "success");
+        setIsWorkflowModalOpen(false);
+        setEditingWorkflowStep(null);
+        setWorkflowTitle(""); setWorkflowDesc(""); setWorkflowIcon("??"); setWorkflowOrder(1); setWorkflowActive(1);
+        loadWorkflowSteps();
+      } else {
+        showToast(data.error || "Gagal menyimpan step", "error");
+      }
+    } catch (err) {
+      showToast("Terjadi kesalahan", "error");
+    }
+  };
+
   useEffect(() => {
     loadWhyUs();
     loadWorkflowSteps();
@@ -2584,7 +2647,7 @@ const handleSaveSettings = async (e: React.FormEvent) => {
                       {step.title}
                     </h3>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">
-                      {step.desc}
+                      {step.description || step.desc}
                     </p>
                   </div>
 

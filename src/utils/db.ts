@@ -5,6 +5,41 @@ const PRODUCTS_LOCAL_KEY = "masterupvc_products";
 const CATEGORIES_LOCAL_KEY = "masterupvc_categories";
 const TIERS_LOCAL_KEY = "masterupvc_tiers";
 const SETTINGS_LOCAL_KEY = "masterupvc_settings";
+
+function safeSetLocalStorage(key: string, value: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.warn(`[db.ts] localStorage.setItem failed for key "${key}" (QuotaExceededError). Server database is the source of truth.`, e);
+  }
+}
+
+function sanitizeSettingsForLocalCache(settings: WebsiteSettings): WebsiteSettings {
+  if (!settings) return settings;
+  const clone: any = { ...settings };
+  const keysToClean = [
+    "company_profile_pdf",
+    "hero_bg_image",
+    "logo",
+    "favicon",
+    "profile_image_hero",
+    "profile_image_about",
+    "profile_image_mission",
+    "color_image_putih",
+    "color_image_hitam",
+    "color_image_coklat",
+    "color_image_golden_oak",
+    "color_image_orange"
+  ];
+  for (const k of keysToClean) {
+    if (typeof clone[k] === "string" && clone[k].length > 50000) {
+      delete clone[k];
+    }
+  }
+  return clone;
+}
+
 const SERVICES_LOCAL_KEY = "masterupvc_services";
 const PROJECTS_LOCAL_KEY = "masterupvc_projects";
 
@@ -88,13 +123,13 @@ function getLocalProducts(): Product[] {
       // fallback to reset
     }
   }
-  localStorage.setItem(PRODUCTS_LOCAL_KEY, JSON.stringify(staticProducts));
+  safeSetLocalStorage(PRODUCTS_LOCAL_KEY, JSON.stringify(staticProducts));
   return staticProducts;
 }
 
 function saveLocalProducts(products: Product[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(PRODUCTS_LOCAL_KEY, JSON.stringify(products));
+  safeSetLocalStorage(PRODUCTS_LOCAL_KEY, JSON.stringify(products));
 }
 
 // CATEGORIES LOCAL STORAGE
@@ -108,13 +143,13 @@ export function getLocalCategories(): Category[] {
       return staticCategories;
     }
   }
-  localStorage.setItem(CATEGORIES_LOCAL_KEY, JSON.stringify(staticCategories));
+  safeSetLocalStorage(CATEGORIES_LOCAL_KEY, JSON.stringify(staticCategories));
   return staticCategories;
 }
 
 function saveLocalCategories(cats: Category[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(CATEGORIES_LOCAL_KEY, JSON.stringify(cats));
+  safeSetLocalStorage(CATEGORIES_LOCAL_KEY, JSON.stringify(cats));
 }
 
 // TIERS LOCAL STORAGE
@@ -128,13 +163,13 @@ export function getLocalTiers(): ProductTier[] {
       return staticTiers;
     }
   }
-  localStorage.setItem(TIERS_LOCAL_KEY, JSON.stringify(staticTiers));
+  safeSetLocalStorage(TIERS_LOCAL_KEY, JSON.stringify(staticTiers));
   return staticTiers;
 }
 
 function saveLocalTiers(tiers: ProductTier[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(TIERS_LOCAL_KEY, JSON.stringify(tiers));
+  safeSetLocalStorage(TIERS_LOCAL_KEY, JSON.stringify(tiers));
 }
 
 // SETTINGS LOCAL STORAGE
@@ -215,7 +250,7 @@ export function getLocalSettings(): WebsiteSettings {
       return defaultSettings;
     }
   }
-  localStorage.setItem(SETTINGS_LOCAL_KEY, JSON.stringify(defaultSettings));
+  safeSetLocalStorage(SETTINGS_LOCAL_KEY, JSON.stringify(sanitizeSettingsForLocalCache(defaultSettings)));
   return defaultSettings;
 }
 
@@ -579,7 +614,7 @@ export async function getSettings(): Promise<WebsiteSettings> {
       const data = await res.json();
       if (data && data.seo_title) {
         if (typeof window !== "undefined") {
-          localStorage.setItem(SETTINGS_LOCAL_KEY, JSON.stringify(data));
+          safeSetLocalStorage(SETTINGS_LOCAL_KEY, JSON.stringify(sanitizeSettingsForLocalCache(data)));
         }
         return data;
       }
@@ -592,7 +627,7 @@ export async function getSettings(): Promise<WebsiteSettings> {
 
 export async function updateSettings(settings: WebsiteSettings): Promise<{ success: boolean; error?: string }> {
   if (typeof window !== "undefined") {
-    localStorage.setItem(SETTINGS_LOCAL_KEY, JSON.stringify(settings));
+    safeSetLocalStorage(SETTINGS_LOCAL_KEY, JSON.stringify(sanitizeSettingsForLocalCache(settings)));
   }
   try {
     const res = await fetch("/api/settings", {
@@ -744,13 +779,13 @@ export function getLocalServices(): Service[] {
       return staticServices;
     }
   }
-  localStorage.setItem(SERVICES_LOCAL_KEY, JSON.stringify(staticServices));
+  safeSetLocalStorage(SERVICES_LOCAL_KEY, JSON.stringify(staticServices));
   return staticServices;
 }
 
 function saveLocalServices(services: Service[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(SERVICES_LOCAL_KEY, JSON.stringify(services));
+  safeSetLocalStorage(SERVICES_LOCAL_KEY, JSON.stringify(services));
 }
 
 // SERVICES ACTIONS
@@ -852,13 +887,13 @@ export function getLocalProjects(): Project[] {
       return staticProjects;
     }
   }
-  localStorage.setItem(PROJECTS_LOCAL_KEY, JSON.stringify(staticProjects));
+  safeSetLocalStorage(PROJECTS_LOCAL_KEY, JSON.stringify(staticProjects));
   return staticProjects;
 }
 
 function saveLocalProjects(projects: Project[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(PROJECTS_LOCAL_KEY, JSON.stringify(projects));
+  safeSetLocalStorage(PROJECTS_LOCAL_KEY, JSON.stringify(projects));
 }
 
 // PROJECTS ACTIONS

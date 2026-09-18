@@ -587,7 +587,25 @@ export default function AdminDashboard() {
       setSocialYoutube(settingsData.social_youtube || "");
       setSocialTwitter(settingsData.social_twitter || "");
       setAiKnowledge(settingsData.ai_knowledge || []);
-      setSchemaJson(settingsData.schema_json || {});
+      const defaultSchema = {
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: "Master UPVC Indonesia",
+          telephone: settingsData.contact_whatsapp || "+62 812-3456-7890",
+          email: settingsData.contact_email || "info@masterupvc.id",
+          url: settingsData.contact_website || "https://masterupvc.id",
+          description: settingsData.seo_description || "Produsen terpercaya kusen, pintu, dan jendela UPVC berkualitas tinggi di Indonesia."
+        };
+        const loadedSchema = settingsData.schema_json || {};
+        setSchemaJson({
+          "@context": loadedSchema["@context"] || defaultSchema["@context"],
+          "@type": loadedSchema["@type"] || defaultSchema["@type"],
+          name: loadedSchema.name || defaultSchema.name,
+          telephone: loadedSchema.telephone || defaultSchema.telephone,
+          email: loadedSchema.email || defaultSchema.email,
+          url: loadedSchema.url || defaultSchema.url,
+          description: loadedSchema.description || defaultSchema.description
+        });
       setAnalyticsScript(settingsData.analytics_script || "");
       setChatbotActive(settingsData.chatbot_active !== undefined ? settingsData.chatbot_active : 0);
       setChatbotName(settingsData.chatbot_name || "Nadia");

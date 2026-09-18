@@ -125,7 +125,23 @@ export async function GET() {
         social_youtube: item.social_youtube || "",
         social_twitter: item.social_twitter || "",
         ai_knowledge: typeof item.ai_knowledge === "string" ? JSON.parse(item.ai_knowledge) : (item.ai_knowledge || []),
-        schema_json: typeof item.schema_json === "string" ? JSON.parse(item.schema_json) : (item.schema_json || {}),
+        schema_json: (() => {
+          let parsed: any = {};
+          if (typeof item.schema_json === "string" && item.schema_json.trim()) {
+            try { parsed = JSON.parse(item.schema_json); } catch {}
+          } else if (typeof item.schema_json === "object" && item.schema_json !== null) {
+            parsed = item.schema_json;
+          }
+          return {
+            "@context": parsed["@context"] || "https://schema.org",
+            "@type": parsed["@type"] || "LocalBusiness",
+            name: parsed.name || item.seo_title || "Master UPVC Indonesia",
+            telephone: parsed.telephone || item.contact_whatsapp || "+62 812-3456-7890",
+            email: parsed.email || item.contact_email || "info@masterupvc.id",
+            url: parsed.url || item.contact_website || "https://masterupvc.id",
+            description: parsed.description || item.seo_description || "Produsen terpercaya kusen, pintu, dan jendela UPVC berkualitas tinggi di Indonesia."
+          };
+        })(),
         analytics_script: item.analytics_script || "",
         chatbot_active: item.chatbot_active !== undefined ? item.chatbot_active : 0,
         chatbot_name: item.chatbot_name || "Nadia",

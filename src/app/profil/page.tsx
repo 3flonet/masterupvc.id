@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getSettings, WebsiteSettings } from "@/utils/db";
+import { getSettings, getLocalSettings, WebsiteSettings } from "@/utils/db";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
@@ -23,7 +23,7 @@ import {
 
 export default function ProfilPage() {
   const [settings, setSettings] = useState<WebsiteSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function loadData() {

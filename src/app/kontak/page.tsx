@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
-import { getSettings, WebsiteSettings } from "@/utils/db";
+import { getSettings, getLocalSettings, WebsiteSettings } from "@/utils/db";
 import { MapPin, Phone, Globe } from "lucide-react";
 
 export default function KontakPage() {

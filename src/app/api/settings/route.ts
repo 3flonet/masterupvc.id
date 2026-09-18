@@ -1,8 +1,10 @@
+let isSettingsMigrated = false;
 import { NextResponse } from "next/server";
 import { executeQuery } from "@/utils/dbMysql";
 
 // Helper function to auto-migrate/create new columns if they do not exist in MySQL
 async function ensureSettingsColumnsExist() {
+  if (isSettingsMigrated) return;
   try {
     const columns = await executeQuery("SHOW COLUMNS FROM settings");
     if (Array.isArray(columns)) {
@@ -49,6 +51,7 @@ async function ensureSettingsColumnsExist() {
       if (!columnNames.includes("smtp_port")) missingColumns.push("smtp_port INT NULL");
       if (!columnNames.includes("smtp_user")) missingColumns.push("smtp_user VARCHAR(255) NULL");
       if (!columnNames.includes("smtp_pass")) missingColumns.push("smtp_pass VARCHAR(255) NULL");
+      isSettingsMigrated = true;
       if (!columnNames.includes("smtp_sender_name")) missingColumns.push("smtp_sender_name VARCHAR(255) NULL");
       if (!columnNames.includes("smtp_secure")) missingColumns.push("smtp_secure TINYINT(1) DEFAULT 0");
       if (!columnNames.includes("hero_badge")) missingColumns.push("hero_badge VARCHAR(255) NULL");
